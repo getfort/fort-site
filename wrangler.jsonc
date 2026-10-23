@@ -1,0 +1,18 @@
+{
+  // Fort landing page — static site on Cloudflare Workers Static Assets.
+  // Deploy from this folder with: ./build.sh && npx wrangler deploy
+  // This is a Worker, not a Pages project. See docs/DEPLOY.md.
+  "name": "fort-web",
+  "compatibility_date": "2026-10-23",
+  "account_id": "7be48c17ff1b7cfb0a4b65cae4cb8ad3",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  // custom_domain: Wrangler creates the DNS record and the certificate on deploy.
+  // Fails if getfort.io already has a conflicting A/AAAA/CNAME record.
+  "routes": [
+    { "pattern": "getfort.io", "custom_domain": true },
+    { "pattern": "www.getfort.io", "custom_domain": true }
+  ]
+}
