@@ -1,6 +1,6 @@
 # fort
 
-Landing page for Fort: secure environments for your agents. "Your environment. Your controls."
+Landing page for Fort: secure environments for your agents. "Any agent. Any harness. Your controls."
 
 Plain static HTML/CSS/JS, no build tooling beyond [`build.sh`](build.sh). Hosted on
 Cloudflare Workers Static Assets.
@@ -8,9 +8,9 @@ Cloudflare Workers Static Assets.
 ```
 index.html     the page
 404.html       served for unknown paths
-styles.css     warm light theme, walnut brown; the colour tokens are at the top
+styles.css     light theme, grey stone and forest greens; the colour tokens are at the top
 script.js      the hero demo (an agent walks tool calls to the gate; Warden allows, asks, denies)
-assets/        fort.svg (the logo: a tower with eyes in the doorway) and favicon.svg
+assets/        fort.svg (the logo: a grey tower with eyes in the doorway) and favicon.svg
 build.sh       assembles dist/ (the only thing published)
 wrangler.jsonc Worker config
 docs/          internal docs — never published

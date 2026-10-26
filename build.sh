@@ -15,17 +15,22 @@ mkdir -p dist
 cp index.html 404.html styles.css script.js dist/
 cp -R assets dist/assets
 
-# Cache-busting: stamp a content hash onto styles.css and script.js so a deploy
+# Cache-busting: stamp a content hash onto styles.css, script.js and the logo files so a deploy
 # can never leave a browser pairing new HTML with a stale stylesheet.
 hash_of() {
   if command -v md5 >/dev/null 2>&1; then md5 -q "$1"; else md5sum "$1" | cut -d' ' -f1; fi
 }
 css_v=$(hash_of dist/styles.css | cut -c1-10)
 js_v=$(hash_of dist/script.js | cut -c1-10)
+logo_v=$(hash_of dist/assets/fort.svg | cut -c1-10)
+icon_v=$(hash_of dist/assets/favicon.svg | cut -c1-10)
 
 for page in dist/index.html dist/404.html; do
   sed -i.bak "s|href=\"\(/\{0,1\}\)styles.css\"|href=\"\1styles.css?v=${css_v}\"|" "$page"
   sed -i.bak "s|src=\"script.js\"|src=\"script.js?v=${js_v}\"|" "$page"
+  # The logo and favicon change colour with the theme, so they get a content hash too.
+  sed -i.bak "s|assets/fort.svg\"|assets/fort.svg?v=${logo_v}\"|g" "$page"
+  sed -i.bak "s|assets/favicon.svg\"|assets/favicon.svg?v=${icon_v}\"|g" "$page"
 done
 rm -f dist/*.bak
 

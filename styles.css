@@ -1,29 +1,34 @@
-/* Fort: warm light theme. Parchment surfaces, dark chocolate text, a walnut-brown brand colour
-   and a brown → terracotta → torchlight gradient for emphasis. Tokens first; keep new colours here.
-   The hero scene's SVG uses the same palette as hex values in index.html. */
+/* Fort: light theme with grey stone and forest greens. Off-white surfaces with a hint of sage,
+   green-charcoal text, a forest-green brand colour and a pine → olive → moss gradient for emphasis.
+   Tokens first; keep new colours here. The demo scene's SVG uses matching hex values in index.html. */
 :root {
   color-scheme: light;
-  --background: oklch(97.6% 0.012 80);
-  --background-deep: oklch(94.6% 0.022 75);
-  --foreground: oklch(26% 0.035 50);
-  --card: oklch(99.3% 0.005 80);
-  --muted: oklch(93.6% 0.02 72);
-  --muted-foreground: oklch(47% 0.035 55);
-  --border: oklch(40% 0.05 50 / 0.14);
-  --input: oklch(40% 0.05 50 / 0.26);
-  --brand: oklch(45% 0.08 50);
-  --brand-strong: oklch(40% 0.08 47);
-  --brand-muted: oklch(45% 0.08 50 / 0.09);
-  --brand-foreground: oklch(98.5% 0.01 80);
-  --ember: oklch(58% 0.15 42);
-  --torch: oklch(70% 0.15 70);
-  --ring: oklch(45% 0.08 50 / 0.4);
-  --gradient: linear-gradient(100deg, var(--brand), var(--ember) 55%, var(--torch));
+  --background: oklch(98% 0.006 125);
+  --background-deep: oklch(95.6% 0.012 130);
+  --foreground: oklch(24% 0.02 155);
+  --card: oklch(99.5% 0.003 125);
+  --muted: oklch(94.6% 0.012 130);
+  --muted-foreground: oklch(46% 0.02 155);
+  --border: oklch(35% 0.03 155 / 0.14);
+  --input: oklch(35% 0.03 155 / 0.26);
+  --brand: oklch(43% 0.08 155);
+  --brand-strong: oklch(38% 0.08 155);
+  --brand-muted: oklch(43% 0.08 155 / 0.09);
+  --brand-foreground: oklch(98.5% 0.005 125);
+  /* Accent gradient: --g1 → --g2 → --g3. --g2 also colours section labels, --g3 the pill dot,
+     --glow the hero's top light. */
+  --g1: oklch(38% 0.07 160);
+  --g2: oklch(50% 0.1 135);
+  --g3: oklch(62% 0.12 120);
+  --glow: oklch(92% 0.04 130 / 0.6);
+  --ring: oklch(43% 0.08 155 / 0.4);
+  --gradient: linear-gradient(100deg, var(--g1), var(--g2) 55%, var(--g3));
+  --shadow: oklch(25% 0.03 155);
   --allow: oklch(52% 0.12 150);
   --ask: oklch(60% 0.14 70);
   --deny: oklch(53% 0.18 28);
-  --code-bg: oklch(25% 0.03 50);
-  --code-fg: oklch(92% 0.02 75);
+  --code-bg: oklch(24% 0.02 160);
+  --code-fg: oklch(93% 0.01 125);
   --radius: 0.625rem;
   --max: 72rem;
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -97,7 +102,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 .btn-primary {
   background: var(--brand);
   color: var(--brand-foreground);
-  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.15) inset, 0 6px 18px -8px oklch(40% 0.08 47 / 0.6);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.15) inset, 0 6px 18px -8px oklch(38% 0.08 155 / 0.55);
 }
 .btn-primary:hover { background: var(--brand-strong); }
 .btn-outline { background: var(--card); border-color: var(--input); color: var(--foreground); }
@@ -110,7 +115,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   position: sticky;
   top: 0;
   z-index: 20;
-  background: oklch(97.6% 0.012 80 / 0.85);
+  background: oklch(98% 0.006 125 / 0.85);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
@@ -134,7 +139,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   padding: 72px 0 88px;
   text-align: center;
   background:
-    radial-gradient(60rem 28rem at 50% -6rem, oklch(88% 0.06 70 / 0.55), transparent 70%),
+    radial-gradient(60rem 28rem at 50% -6rem, var(--glow), transparent 70%),
     var(--background);
 }
 .pill {
@@ -148,14 +153,15 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   color: var(--muted-foreground);
   font-size: 13.5px;
 }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--torch); box-shadow: 0 0 0 3px oklch(70% 0.15 70 / 0.22); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--g3); box-shadow: 0 0 0 3px color-mix(in oklch, var(--g3) 22%, transparent); }
 #hero h1 {
   margin: 22px auto 0;
   max-width: 18ch;
   font-size: clamp(2.6rem, 6.6vw, 4.8rem);
   line-height: 1.02;
 }
-#hero h1 .grad-text { display: inline-block; padding-bottom: 0.06em; }
+#hero h1 .grad-text { display: block; padding-bottom: 0.06em; }
+#hero h1 .beat { white-space: nowrap; }
 .tagline {
   margin-top: 14px;
   font: 500 clamp(1.3rem, 2.6vw, 1.75rem)/1.3 var(--serif);
@@ -192,7 +198,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 30px 60px -30px oklch(30% 0.06 50 / 0.35), 0 2px 6px oklch(30% 0.06 50 / 0.06);
+  box-shadow: 0 30px 60px -30px oklch(25% 0.03 155 / 0.3), 0 2px 6px oklch(25% 0.03 155 / 0.06);
   overflow: hidden;
 }
 .demo-head {
@@ -206,7 +212,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   color: var(--muted-foreground);
 }
 .demo-dots { display: inline-flex; gap: 6px; }
-.demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: oklch(40% 0.05 50 / 0.18); }
+.demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: oklch(35% 0.03 155 / 0.18); }
 .demo-tag {
   margin-left: auto;
   padding: 3px 8px;
@@ -219,16 +225,16 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 }
 .demo-body { display: grid; grid-template-columns: 1.45fr 1fr; }
 /* The ground colour fills any height the feed adds below the drawing. */
-.scene { border-right: 1px solid var(--border); background: #dcc3a0; }
+.scene { border-right: 1px solid var(--border); background: #b9c6a3; }
 .scene svg { display: block; width: 100%; height: auto; }
-.scene-label { font: 600 10.5px var(--mono); fill: #6b4a33; letter-spacing: 0.02em; }
+.scene-label { font: 600 10.5px var(--mono); fill: #4b5651; letter-spacing: 0.02em; }
 
 /* Creatures. Each .critter sets --c (body colour) and --d (animation offset). */
 .critter { --c: #e9a23b; animation: bob 2.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
 .c-body { fill: var(--c); }
-.c-foot { fill: #5a3a24; }
-.c-ant { stroke: #5a3a24; stroke-width: 2; stroke-linecap: round; fill: none; }
-.c-pupil { fill: #2b1a10; }
+.c-foot { fill: #3a3f3c; }
+.c-ant { stroke: #3a3f3c; stroke-width: 2; stroke-linecap: round; fill: none; }
+.c-pupil { fill: #1f2522; }
 .c-eyes { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; animation-delay: var(--d, 0s); }
 .warden { animation-duration: 3.6s; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
@@ -258,9 +264,9 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 
 .bubble { opacity: 0; transition: opacity 0.2s; }
 .bubble.show { opacity: 1; }
-.bubble rect, .bubble .tail { fill: #fffaf0; stroke: #5a3a24; stroke-width: 1.5; }
+.bubble rect, .bubble .tail { fill: #fbfcf8; stroke: #3a3f3c; stroke-width: 1.5; }
 .bubble .tail { stroke: none; }
-.bubble text { font: 700 12.5px var(--font); fill: #2b1a10; }
+.bubble text { font: 700 12.5px var(--font); fill: #1f2522; }
 .bubble.allow text { fill: #2f7a47; }
 .bubble.ask text { fill: #9a6a0c; }
 .bubble.deny text { fill: #b23a24; }
@@ -317,7 +323,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 .approval-title { font: 700 12px/1 var(--font); text-transform: uppercase; letter-spacing: 0.07em; color: oklch(48% 0.12 65); }
 .approval-meta { font-size: 12.5px; color: var(--muted-foreground); }
 .approval .btn { justify-self: start; margin-top: 4px; animation: nudge 1.6s ease-in-out infinite; }
-@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 oklch(45% 0.08 50 / 0.35); } 50% { box-shadow: 0 0 0 6px oklch(45% 0.08 50 / 0); } }
+@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 oklch(43% 0.08 155 / 0.35); } 50% { box-shadow: 0 0 0 6px oklch(43% 0.08 155 / 0); } }
 
 .plan-actions { display: flex; align-items: center; gap: 12px; margin-top: auto; }
 .run-status { font-size: 13.5px; color: var(--muted-foreground); }
@@ -331,7 +337,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   font: 600 12.5px/1 var(--font);
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: var(--ember);
+  color: var(--g2);
 }
 .section-title {
   margin-top: 14px;
@@ -374,7 +380,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 .step h3 { margin-top: 16px; font-size: 17px; }
 .step p { margin-top: 8px; color: var(--muted-foreground); font-size: 15px; line-height: 1.6; }
 
-.policy, .open, .waitlist {
+.policy, .waitlist {
   display: grid;
   grid-template-columns: 1fr 1.15fr;
   gap: 48px;
@@ -395,7 +401,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  background: var(--brand-muted) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b4a2b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 12px no-repeat;
+  background: var(--brand-muted) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f5d46' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 12px no-repeat;
 }
 
 .code-card {
@@ -403,7 +409,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   border-radius: 14px;
   overflow: hidden;
   background: var(--code-bg);
-  box-shadow: 0 24px 50px -28px oklch(25% 0.05 50 / 0.6);
+  box-shadow: 0 24px 50px -28px oklch(22% 0.03 155 / 0.55);
 }
 .code-card figcaption {
   display: flex;
@@ -412,9 +418,9 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   padding: 11px 16px;
   border-bottom: 1px solid oklch(100% 0 0 / 0.08);
   font: 12.5px var(--mono);
-  color: oklch(78% 0.03 70);
+  color: oklch(78% 0.02 140);
 }
-.code-card .demo-tag { background: oklch(100% 0 0 / 0.08); color: oklch(85% 0.06 75); }
+.code-card .demo-tag { background: oklch(100% 0 0 / 0.08); color: oklch(86% 0.06 130); }
 .code-card pre { margin: 0; padding: 18px; overflow-x: auto; }
 .code-card code {
   padding: 0;
@@ -422,8 +428,8 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   color: var(--code-fg);
   font: 13px/1.65 var(--mono);
 }
-.code-card .k { color: oklch(80% 0.1 65); }
-.code-card .c { color: oklch(62% 0.03 60); font-style: italic; }
+.code-card .k { color: oklch(82% 0.1 130); }
+.code-card .c { color: oklch(62% 0.02 150); font-style: italic; }
 .code-card .ask { color: oklch(82% 0.15 85); font-weight: 700; }
 
 .principles {
@@ -522,7 +528,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 }
 .frameworks li {
   padding: 7px 16px;
-  border: 1px solid oklch(45% 0.08 50 / 0.3);
+  border: 1px solid oklch(43% 0.08 155 / 0.3);
   border-radius: 999px;
   background: var(--brand-muted);
   color: var(--brand-strong);
@@ -540,24 +546,12 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 }
 .statement .grad-text { display: block; }
 
-.terminal {
-  padding: 20px 22px;
-  border-radius: 14px;
-  background: var(--code-bg);
-  color: var(--code-fg);
-  font: 14px/1.9 var(--mono);
-  box-shadow: 0 24px 50px -28px oklch(25% 0.05 50 / 0.6);
-}
-.terminal .prompt { color: oklch(72% 0.13 60); margin-right: 10px; }
-.terminal .out { color: oklch(68% 0.03 65); padding-left: 22px; }
-.terminal .ok { color: oklch(76% 0.13 150); }
-
 .form-card {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--card);
-  box-shadow: 0 20px 40px -28px oklch(30% 0.06 50 / 0.35);
+  box-shadow: 0 20px 40px -28px oklch(25% 0.03 155 / 0.3);
 }
 .card-title { margin-top: 28px; font-weight: 600; }
 .waitlist .checklist { margin-top: 12px; }
@@ -592,14 +586,13 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   .steps, .principles { grid-template-columns: repeat(2, 1fr); }
   .demo-body { grid-template-columns: 1fr; }
   .scene { border-right: 0; border-bottom: 1px solid var(--border); }
-  .policy, .open, .waitlist, .compliance { grid-template-columns: 1fr; gap: 32px; }
+  .policy, .waitlist, .compliance { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 640px) {
   .container { padding: 0 16px; }
   .nav { display: none; }
   .site-header .btn { margin-left: auto; }
   #hero { padding: 48px 0 64px; }
-  .pill-extra { display: none; }
   .demo-head > span:nth-child(2) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .lede { font-size: 16.5px; }
   .demo { margin-top: 40px; }
