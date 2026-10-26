@@ -151,8 +151,8 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--torch); box-shadow: 0 0 0 3px oklch(70% 0.15 70 / 0.22); }
 #hero h1 {
   margin: 22px auto 0;
-  max-width: 13ch;
-  font-size: clamp(2.8rem, 7vw, 5rem);
+  max-width: 18ch;
+  font-size: clamp(2.6rem, 6.6vw, 4.8rem);
   line-height: 1.02;
 }
 #hero h1 .grad-text { display: inline-block; padding-bottom: 0.06em; }
@@ -468,6 +468,69 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   font-size: 14px;
 }
 
+.compliance {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 32px;
+  margin-top: 44px;
+  align-items: start;
+}
+.pillars { display: grid; gap: 14px; }
+.pillar {
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--brand);
+  border-radius: 12px;
+  background: var(--card);
+}
+.pillar h3 { font-size: 17px; }
+.pillar p { margin-top: 8px; color: var(--muted-foreground); font-size: 15px; line-height: 1.6; }
+.owasp {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.owasp figcaption {
+  padding: 14px 20px;
+  background: var(--background-deep);
+  border-bottom: 1px solid var(--border);
+  font: 600 13px/1.4 var(--font);
+  color: var(--muted-foreground);
+}
+.owasp dl { margin: 0; }
+.owasp dl > div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+.owasp dl > div:first-child { border-top: 0; }
+.owasp dt { font-weight: 600; font-size: 14.5px; }
+.owasp dd { margin: 0; color: var(--muted-foreground); font-size: 14.5px; line-height: 1.55; }
+.frameworks { margin-top: 36px; text-align: center; color: var(--muted-foreground); }
+.frameworks ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+}
+.frameworks li {
+  padding: 7px 16px;
+  border: 1px solid oklch(45% 0.08 50 / 0.3);
+  border-radius: 999px;
+  background: var(--brand-muted);
+  color: var(--brand-strong);
+  font-weight: 600;
+  font-size: 14px;
+}
+.frameworks .note { font-size: 13.5px; }
+
 #statement { background: var(--background-deep); text-align: center; }
 .statement {
   margin: 0 auto;
@@ -529,7 +592,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   .steps, .principles { grid-template-columns: repeat(2, 1fr); }
   .demo-body { grid-template-columns: 1fr; }
   .scene { border-right: 0; border-bottom: 1px solid var(--border); }
-  .policy, .open, .waitlist { grid-template-columns: 1fr; gap: 32px; }
+  .policy, .open, .waitlist, .compliance { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 640px) {
   .container { padding: 0 16px; }
@@ -543,6 +606,7 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   .steps, .principles { grid-template-columns: 1fr; }
   .section { padding: 72px 0; }
   .code-card code { font-size: 12px; }
+  .owasp dl > div { grid-template-columns: 1fr; gap: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

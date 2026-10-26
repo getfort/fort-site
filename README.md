@@ -1,6 +1,6 @@
 # fort
 
-Landing page for Fort: secure environments for your agents. "Your agents’ home. Your controls."
+Landing page for Fort: secure environments for your agents. "Your environment. Your controls."
 
 Plain static HTML/CSS/JS, no build tooling beyond [`build.sh`](build.sh). Hosted on
 Cloudflare Workers Static Assets.

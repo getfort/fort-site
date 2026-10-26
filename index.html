@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fort — Secure environments for your agents</title>
   <meta name="description" content="Fort is an open-source environment, installed in your own cloud, where autonomous agents run in sandboxes and can only do what you allow: which models, which tools with which arguments, which actions need a human's sign-off, and a record of everything they did.">
-  <meta property="og:title" content="Fort — Your agents’ home. Your controls.">
-  <meta property="og:description" content="Secure environments for your agents. Any container, any framework, any model provider, in your cloud and under your controls.">
+  <meta property="og:title" content="Fort — Your environment. Your controls.">
+  <meta property="og:description" content="Secure environments for any agent, any harness, any model. In your cloud, with gated approvals and an auditable record of every action.">
   <meta name="theme-color" content="#7b4a2b">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -24,6 +24,7 @@
       <nav class="nav" aria-label="Sections">
         <a href="#how">How it works</a>
         <a href="#walls">Controls</a>
+        <a href="#compliance">Compliance</a>
         <a href="#open">Open source</a>
       </nav>
       <a class="btn btn-primary btn-sm" href="#access">Request access</a>
@@ -35,22 +36,22 @@
     <section id="hero">
       <div class="container">
         <span class="pill"><span class="dot" aria-hidden="true"></span><span>Open source · Runs in your cloud<span class="pill-extra"> · Early access</span></span></span>
-        <h1>Your agents’ home. <span class="grad-text">Your controls.</span></h1>
-        <p class="tagline">Secure environments for your agents.</p>
+        <h1>Your environment. <span class="grad-text">Your controls.</span></h1>
+        <p class="tagline">Secure environments for any agent, any harness, any model.</p>
         <p class="lede">
-          Fort is an open-source environment you install in your own cloud. Bring any container, any
-          framework, any model provider. Each agent lives in its own sandbox and can only do what you
-          allow: which models it uses, which tools it calls with which arguments, and which actions
-          wait for a person. Everything it does lands in a record you can check yourself.
+          Fort is open source and installs in your own cloud. Package your agent as a container, built on
+          whatever harness you use. It runs in its own sandbox and can only do what you allow: which
+          models it uses, which tools it calls with which arguments, and which actions wait for a
+          person's approval. Everything it does lands in a record your auditors can verify.
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#access">Request early access</a>
           <a class="btn btn-outline" href="#how">How it works</a>
         </div>
         <ul class="assurances">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Deny by default</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Gated approvals</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Auditable by default</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Keys never enter the agent</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>A person signs off on risky actions</li>
         </ul>
 
         <div class="demo" aria-label="Example: an SRE agent inside Fort makes three tool calls and Warden decides each one">
@@ -331,6 +332,54 @@
         <ul class="works-with" aria-label="Works with">
           <li>Any OCI image</li><li>Anthropic</li><li>OpenAI</li><li>AWS Bedrock</li><li>Google Vertex</li><li>Azure OpenAI</li><li>vLLM · Ollama</li><li>Slack</li><li>OIDC</li>
         </ul>
+      </div>
+    </section>
+
+    <section id="compliance" class="section">
+      <div class="container">
+        <p class="label">Compliance</p>
+        <h2 class="section-title">Gated, auditable, and ready for the questions regulators ask.</h2>
+        <p class="section-lede">
+          Regulators and auditors want to know who allowed an agent to act, and to see proof. Fort answers
+          both by default, from records you hold in your own cloud.
+        </p>
+        <div class="compliance">
+          <div class="pillars">
+            <article class="pillar">
+              <h3>Gated approvals</h3>
+              <p>Risky actions wait for a named approver with a fresh sign-in the AI can't fake. Nobody approves
+              their own request, and a grant covers that exact call, once. Every approval is on the record.</p>
+            </article>
+            <article class="pillar">
+              <h3>Auditable by default</h3>
+              <p>Every call, allowed or denied, goes into a hash-chained ledger with signed checkpoints. It
+              records the rule that decided, the policy version and who approved. Auditors verify it
+              offline, on their own laptop.</p>
+            </article>
+            <article class="pillar">
+              <h3>Least privilege, enforced</h3>
+              <p>Deny by default, per agent: no tool, host or model the policy doesn't name. Policy changes go
+              through review like code, and each one is recorded.</p>
+            </article>
+          </div>
+          <figure class="owasp">
+            <figcaption>OWASP risks for LLM and agentic applications, and how Fort handles them</figcaption>
+            <dl>
+              <div><dt>Excessive agency</dt><dd>Argument-level allow, ask or deny on every tool call</dd></div>
+              <div><dt>Tool misuse</dt><dd>Tools are reached only through Warden's gate, never directly</dd></div>
+              <div><dt>Sensitive information disclosure</dt><dd>Keys stay outside the agent; egress is deny by default</dd></div>
+              <div><dt>Prompt injection</dt><dd>A hijacked agent still can't act beyond its policy</dd></div>
+              <div><dt>Rogue agents</dt><dd>One stop switch for an agent or all of them</dd></div>
+            </dl>
+          </figure>
+        </div>
+        <div class="frameworks">
+          <p>Built for the oversight and record-keeping that frameworks require:</p>
+          <ul aria-label="Frameworks">
+            <li>EU AI Act</li><li>NIST AI RMF</li><li>ISO/IEC 42001</li><li>OWASP</li>
+          </ul>
+          <p class="note">Ready-made control maps and evidence packs for these frameworks are on the roadmap.</p>
+        </div>
       </div>
     </section>
 
