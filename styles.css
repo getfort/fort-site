@@ -455,12 +455,11 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 }
 .principle h3 { margin-top: 14px; font-size: 16.5px; }
 .principle p { margin-top: 8px; color: var(--muted-foreground); font-size: 14.5px; line-height: 1.6; }
-.principle code { font-size: 0.85em; }
 .principles.three { grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .pillar-card { display: flex; flex-direction: column; padding: 26px; border-top: 4px solid var(--g1); }
 .pillar-card:nth-child(2) { border-top-color: var(--g2); }
 .pillar-card:nth-child(3) { border-top-color: var(--g3); }
-.pillar-num {
+.pillar-card .pillar-num {
   margin-top: 18px;
   font: 600 11.5px/1 var(--mono);
   letter-spacing: 0.12em;
@@ -571,7 +570,6 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
 }
 .statement .grad-text { display: block; }
 #statement .label { margin-bottom: 18px; }
-.statement { margin-top: 0; }
 .statement-sub { margin: 22px auto 0; max-width: 40rem; color: var(--muted-foreground); font-size: 17px; }
 .statement-sub b { color: var(--foreground); }
 
@@ -582,7 +580,6 @@ code { font: 0.88em var(--mono); background: var(--muted); padding: 0.1em 0.35em
   background: var(--card);
   box-shadow: 0 20px 40px -28px oklch(25% 0.03 155 / 0.3);
 }
-.card-title { margin-top: 28px; font-weight: 600; }
 .waitlist .checklist { margin-top: 12px; }
 .waitlist { align-items: start; }
 .typeform { padding: 0; overflow: hidden; }
