@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fort — Secure environments for your agents</title>
-  <meta name="description" content="Fort is a secure environment, installed in your own cloud, where autonomous agents run in sandboxes and can only do what you allow: which models, which tools with which arguments, which actions need a human's sign-off, and a record of everything they did.">
-  <meta property="og:title" content="Fort — Any agent. Any harness. Your controls.">
-  <meta property="og:description" content="Secure environments for any agent, any harness, any model. In your cloud, with gated approvals and an auditable record of every action.">
+  <title>Fort — Know your agent. Control what it does. Trust every interaction.</title>
+  <meta name="description" content="AI agent trust and security. Fort governs AI agents as autonomous, non-human digital actors in your own cloud: every agent gets its own locked sandbox and can only do what you allow.">
+  <meta property="og:title" content="Fort — Know your agent. Control what it does. Trust every interaction.">
+  <meta property="og:description" content="A trusted security foundation for the agentic AI era. Any agent. Any harness. Your controls.">
   <meta name="theme-color" content="#2f5d46">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -22,9 +22,9 @@
         <span>Fort</span>
       </a>
       <nav class="nav" aria-label="Sections">
+        <a href="#pillars">Pillars</a>
         <a href="#how">How it works</a>
-        <a href="#walls">Controls</a>
-        <a href="#compliance">Compliance</a>
+        <a href="#compliance">Governance</a>
       </nav>
       <a class="btn btn-primary btn-sm" href="#access">Request access</a>
     </div>
@@ -34,23 +34,24 @@
 
     <section id="hero">
       <div class="container">
-        <span class="pill"><span class="dot" aria-hidden="true"></span><span>Now in early access</span></span>
-        <h1><span class="beat">Any agent.</span> <span class="beat">Any harness.</span> <span class="grad-text">Your controls.</span></h1>
-        <p class="tagline">Secure environments for your agents.</p>
+        <span class="pill"><span class="dot" aria-hidden="true"></span><span>AI Agent Trust &amp; Security</span></span>
+        <h1><span class="beat">Know your agent.</span> <span class="beat">Control what it does.</span> <span class="grad-text">Trust every interaction.</span></h1>
+        <p class="tagline">A trusted security foundation for the agentic AI era.</p>
         <p class="lede">
-          Package your agent as a container, built on whatever harness you use. Fort runs it in its own
-          sandbox and can only do what you allow: which
-          models it uses, which tools it calls with which arguments, and which actions wait for a
-          person's approval. Everything it does lands in a record your auditors can verify.
+          Traditional cybersecurity protects users, endpoints, applications and networks. As AI agents become
+          autonomous, organizations need a new security model that governs <b>AI agents as autonomous, non-human
+          digital actors</b>, able to make decisions and take actions on their own. <b>Fort brings that model into
+          your own cloud:</b> every agent gets its own locked sandbox and can only do what you allow.
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#access">Request early access</a>
-          <a class="btn btn-outline" href="#how">How it works</a>
+          <a class="btn btn-outline" href="#pillars">See the three pillars</a>
         </div>
         <ul class="assurances">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Gated approvals</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Auditable by default</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Keys never enter the agent</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>In your cloud</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Any agent</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>No changes to your agents</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Live in an afternoon</li>
         </ul>
 
         <div class="demo" aria-label="Example: an SRE agent inside Fort makes three tool calls and Warden decides each one">
@@ -217,6 +218,67 @@
       </div>
     </section>
 
+    <section id="pillars" class="section">
+      <div class="container">
+        <p class="label">Three core pillars</p>
+        <h2 class="section-title">Know the agent → Control the agent → Trust the interaction.</h2>
+        <div class="principles three">
+          <article class="principle pillar-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="14" x="3" y="5" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0"/><path d="M15 10h4"/><path d="M15 14h3"/></svg>
+            <p class="pillar-num">01 · Trust in identity</p>
+            <h3>Agent Identity &amp; KYA (Know Your Agent)</h3>
+            <p>Establish and continuously verify each agent's identity, ownership and accountability.</p>
+            <ul class="checklist">
+              <li><b>A unique identity for every agent.</b> Authenticated on every action, and running only the version you approved.</li>
+              <li><b>Clear ownership and accountability.</b> Who owns each agent, who deployed it and who approved its actions is on record.</li>
+            </ul>
+            <p class="soon"><b>Coming soon:</b> model and runtime attestation; provenance; trust &amp; risk scoring.</p>
+            <p class="ask-q">Who is this agent, who owns it, and can we trust it?</p>
+          </article>
+          <article class="principle pillar-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c5.5-2 8-6 8-12V5l-8-3-8 3v5c0 6 2.5 10 8 12Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <p class="pillar-num">02 · Trust in the agent</p>
+            <h3>Agent Governance &amp; Protection</h3>
+            <p>Agents operate safely within defined policies and permissions, protected from compromise or manipulation.</p>
+            <ul class="checklist">
+              <li><b>Policies and permissions you control.</b> Decide which tools and data each agent can use, and what it may do with them.</li>
+              <li><b>A person approves risky actions.</b> Nothing critical happens until a named person says yes.</li>
+              <li><b>Contained, even if hijacked.</b> A manipulated agent can still only do what you allow, and one switch stops it instantly.</li>
+            </ul>
+            <p class="soon"><b>Coming soon:</b> prompt-injection and anomaly detection; vulnerability scanning.</p>
+            <p class="ask-q">Is this agent operating safely, within its authorized boundaries?</p>
+          </article>
+          <article class="principle pillar-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/></svg>
+            <p class="pillar-num">03 · Trust in interaction</p>
+            <h3>Secure Communication &amp; Audit</h3>
+            <p>Secure every exchange between agents and the systems, tools and services they use.</p>
+            <ul class="checklist">
+              <li><b>The agent never sees a password or key.</b> Credentials are added outside the agent, only where you allow.</li>
+              <li><b>Every interaction authorized.</b> Each call to a tool or service is checked against your policy, and no agent can pose as another.</li>
+              <li><b>Tamper-evident audit trail.</b> Every action, allowed or blocked, is recorded as evidence for audit and compliance.</li>
+            </ul>
+            <p class="soon"><b>Coming soon:</b> secure agent-to-agent (A2A) communication.</p>
+            <p class="ask-q">Can we trust the counterparty and the interaction itself?</p>
+          </article>
+        </div>
+        <ul class="works-with" aria-label="Works with">
+          <li>Any OCI image</li><li>Anthropic</li><li>OpenAI</li><li>AWS Bedrock</li><li>Google Vertex</li><li>Azure OpenAI</li><li>vLLM · Ollama</li><li>Slack</li><li>OIDC</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="statement" class="section">
+      <div class="container">
+        <p class="label">Foundation under all three</p>
+        <p class="statement">
+          The sandbox keeps the agent in.
+          <span class="grad-text">Fort decides what gets out.</span>
+        </p>
+        <p class="statement-sub"><b>A locked sandbox for every agent.</b> Isolated, with no network of its own. Built on NVIDIA OpenShell.</p>
+      </div>
+    </section>
+
     <section id="how" class="section">
       <div class="container">
         <p class="label">How it works</p>
@@ -282,58 +344,6 @@
       </div>
     </section>
 
-    <section id="walls" class="section">
-      <div class="container">
-        <p class="label">The walls</p>
-        <h2 class="section-title">Every wall is one you can check.</h2>
-        <div class="principles">
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-            <h3>A sandbox per agent</h3>
-            <p>Each agent runs in its own OpenShell sandbox: non-root, Landlock and seccomp, with default-deny egress per binary.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>
-            <h3>Keys stay outside</h3>
-            <p>Model keys and tool credentials never enter the agent. They are added at the edge, and only for hosts you allowed.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
-            <h3>Argument-level tool policy</h3>
-            <p><code>restart_deployment</code> only in staging. <code>db.query</code> only <code>SELECT</code>. Nothing that matches <code>*delete*</code>.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="m16 11 2 2 4-4"/></svg>
-            <h3>A person signs off</h3>
-            <p>An ask waits for a named approver with a fresh sign-in the AI can't fake. The grant covers that exact call, once.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="5" y="5" rx="2"/></svg>
-            <h3>One stop switch</h3>
-            <p>Stop one agent or all of them from the CLI, an MCP client or Slack. A stop survives restarts.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/></svg>
-            <h3>Evidence, not promises</h3>
-            <p>A hash-chained ledger with signed checkpoints. If Fort can't record a decision, the action is denied.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c5.5-2 8-6 8-12V5l-8-3-8 3v5c0 6 2.5 10 8 12Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-            <h3>It tries to escape, on purpose</h3>
-            <p><code>fort doctor --probe</code> sends in a probe agent that tries every way out. Any attempt that works fails the install.</p>
-          </article>
-          <article class="principle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <h3>Your people, your roles</h3>
-            <p>Sign in with your identity provider. Built-in and custom roles, per project. Deploying an agent can never make anyone admin.</p>
-          </article>
-        </div>
-        <ul class="works-with" aria-label="Works with">
-          <li>Any OCI image</li><li>Anthropic</li><li>OpenAI</li><li>AWS Bedrock</li><li>Google Vertex</li><li>Azure OpenAI</li><li>vLLM · Ollama</li><li>Slack</li><li>OIDC</li>
-        </ul>
-      </div>
-    </section>
-
     <section id="compliance" class="section">
       <div class="container">
         <p class="label">Compliance</p>
@@ -343,51 +353,25 @@
           both by default, from records you hold in your own cloud.
         </p>
         <div class="compliance">
-          <div class="pillars">
-            <article class="pillar">
-              <h3>Gated approvals</h3>
-              <p>Risky actions wait for a named approver with a fresh sign-in the AI can't fake. Nobody approves
-              their own request, and a grant covers that exact call, once. Every approval is on the record.</p>
-            </article>
-            <article class="pillar">
-              <h3>Auditable by default</h3>
-              <p>Every call, allowed or denied, goes into a hash-chained ledger with signed checkpoints. It
-              records the rule that decided, the policy version and who approved. Auditors verify it
-              offline, on their own laptop.</p>
-            </article>
-            <article class="pillar">
-              <h3>Least privilege, enforced</h3>
-              <p>Deny by default, per agent: no tool, host or model the policy doesn't name. Policy changes go
-              through review like code, and each one is recorded.</p>
-            </article>
-          </div>
           <figure class="owasp">
-            <figcaption>OWASP risks for LLM and agentic applications, and how Fort handles them</figcaption>
+            <figcaption><span>OWASP risk for AI agents</span><span>How Fort handles it</span></figcaption>
             <dl>
-              <div><dt>Excessive agency</dt><dd>Argument-level allow, ask or deny on every tool call</dd></div>
-              <div><dt>Tool misuse</dt><dd>Tools are reached only through Warden's gate, never directly</dd></div>
-              <div><dt>Sensitive information disclosure</dt><dd>Keys stay outside the agent; egress is deny by default</dd></div>
+              <div><dt>Excessive agency</dt><dd>Allow, ask or deny on every tool call</dd></div>
+              <div><dt>Tool misuse</dt><dd>Tools are reached only through Fort's checkpoint, never directly</dd></div>
+              <div><dt>Sensitive information disclosure</dt><dd>Keys stay outside the agent; internet access is denied unless you allow it</dd></div>
               <div><dt>Prompt injection</dt><dd>A hijacked agent still can't act beyond its policy</dd></div>
               <div><dt>Rogue agents</dt><dd>One stop switch for an agent or all of them</dd></div>
             </dl>
+            <p class="tsoon"><b>Coming soon:</b> ready-made control maps and evidence packs for these frameworks.</p>
           </figure>
+          <aside class="frameworks">
+            <p>Built for the human oversight and record-keeping these frameworks call for:</p>
+            <p class="fw-label">Global</p>
+            <ul aria-label="Global frameworks"><li>EU AI Act</li><li>NIST AI RMF</li><li>ISO/IEC 42001</li><li>OWASP</li></ul>
+            <p class="fw-label">Japan</p>
+            <ul aria-label="Japanese frameworks"><li>AI Promotion Act</li><li>AI Guidelines for Business (METI/MIC)</li><li>FSA AI Discussion Paper</li></ul>
+          </aside>
         </div>
-        <div class="frameworks">
-          <p>Built for the oversight and record-keeping that frameworks require:</p>
-          <ul aria-label="Frameworks">
-            <li>EU AI Act</li><li>NIST AI RMF</li><li>ISO/IEC 42001</li><li>OWASP</li>
-          </ul>
-          <p class="note">Ready-made control maps and evidence packs for these frameworks are on the roadmap.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="statement" class="section">
-      <div class="container">
-        <p class="statement">
-          You hold the keys.
-          <span class="grad-text">Fort holds the walls.</span>
-        </p>
       </div>
     </section>
 
@@ -395,16 +379,16 @@
       <div class="container waitlist">
         <div>
           <p class="label">Early access</p>
-          <h2 class="section-title">Move your first agent in.</h2>
+          <h2 class="section-title">Any agent. Any harness. <span class="grad-text">Your controls.</span></h2>
           <p class="section-lede">
             We're working with a few platform and security teams before launch. Tell us what you want your
             agents to do, and we'll be in touch.
           </p>
-          <p class="card-title">What you'll need</p>
-          <ul class="checklist">
-            <li>A Linux VM in your cloud (Ubuntu 24.04)</li>
-            <li>An agent packaged as a container image, any framework</li>
-            <li>A key for one model provider</li>
+          <ul class="checklist values">
+            <li><b>In your cloud</b> No SaaS, no phone-home.</li>
+            <li><b>Any agent</b> Any container, any framework.</li>
+            <li><b>No changes to your agents</b> They run as they are.</li>
+            <li><b>Live in an afternoon</b> One install command.</li>
           </ul>
         </div>
         <div class="form-card typeform">
