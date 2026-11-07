@@ -34,7 +34,7 @@ Visitors read this as a buyer evaluating risk: they look for the controls, the e
 ## Brand Commitments
 
 - Name: Fort. Domain: getfort.io. Decision component named Warden in product messages.
-- Headline (owner, 2026-11-07): "Your agents. Your cloud. Your controls." with the first line of the one-pager "What Fort is" under it. Visitors took the old headline for a SaaS, so the hero must say Fort is self-hosted. Never write "Not a SaaS" or "No SaaS"; say "Nothing phones home".
+- Headline (owner, 2026-11-07): "Your agents. Your cloud. Your controls." with the first line of the one-pager "What Fort is" under it. Visitors took the old headline for a SaaS, so the hero must say Fort is self-hosted. Never write "Not a SaaS" or "No SaaS", and avoid jargon like "phone-home"; say "We never see your data". The hero lede opens with "Fort creates trust in your agents." (owner, 2026-11-07).
 - Wording elsewhere: the A3 one-pager's text (lede, pillar text, foundation line, governance table, frameworks, value proposition, closing line "Any agent. Any harness. Your controls.").
 - Approved look (owner, 2026-10-26): grey stone fort, forest greens, no brown. The A3 uses the same palette tokens. Logo: the grey stone fort in assets/fort.svg (the A3's tower icon is not used on the site).
 - Rejected before, do not bring back: "Let your agents run free", animated animals walking on a fort, brown palette, "Any model" in the headline.
