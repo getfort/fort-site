@@ -20,7 +20,7 @@ Know your agent. Control what it does. Trust every interaction. Fort covers agen
 
 ## Operating Context
 
-Visitors read this as a buyer evaluating risk: they look for the controls, the evidence and the frameworks they answer to (EU AI Act, NIST AI RMF, ISO/IEC 42001, OWASP; in Japan the AI Promotion Act, the AI Guidelines for Business (METI/MIC) and the FSA AI Discussion Paper). The same message ships as an A3/A4 one-pager (~/Work/fort/artifacts/one-pager/fort-one-pager-a3.html), which the site must match.
+Visitors read this as a buyer evaluating risk: they look for the controls, the evidence and the frameworks they answer to (EU AI Act, NIST AI RMF, ISO/IEC 42001, OWASP; in Japan the AI Promotion Act, the AI Guidelines for Business (METI/MIC) and the FSA AI Discussion Paper). The A3/A4 one-pager (~/Work/fort/artifacts/one-pager/fort-one-pager-a3.html) contains the fuller message. On 2026-11-07 the owner selected the shorter illustrated website; it summarizes the same product without reproducing every one-pager section.
 
 ## Capabilities and Constraints
 
@@ -29,15 +29,15 @@ Visitors read this as a buyer evaluating risk: they look for the controls, the e
 - "Coming soon" items stay labelled as coming soon: model and runtime attestation, provenance, trust and risk scoring; prompt-injection and anomaly detection, vulnerability scanning; secure agent-to-agent (A2A) communication; ready-made control maps and evidence packs.
 - Never claim certification or compliance with a framework; Fort is "built for the human oversight and record-keeping these frameworks call for".
 - The interactive demo (an SRE agent's tool calls: allow, ask with a person approving, deny) is illustrative and labelled "Example".
-- Primary action: request early access through the embedded Typeform "Fort early access" (twrlRIKM).
+- Primary action: request early access through a link to the existing Typeform "Fort early access" (twrlRIKM).
 
 ## Brand Commitments
 
 - Name: Fort. Domain: getfort.io. Decision component named Warden in product messages.
-- Headline (owner, 2026-11-07): "Your agents. Your cloud. Your controls." with the first line of the one-pager "What Fort is" under it. Visitors took the old headline for a SaaS, so the hero must say Fort is self-hosted. Never write "Not a SaaS" or "No SaaS", and avoid jargon like "phone-home"; say "We never see your data". The hero lede opens with "Fort creates trust in your agents." (owner, 2026-11-07).
-- Wording elsewhere: the A3 one-pager's text (lede, pillar text, foundation line, governance table, frameworks, value proposition, closing line "Any agent. Any harness. Your controls.").
+- Current selected version (owner, 2026-11-07): the shorter illustrated landing page, chosen after comparing it with a version using the live site's full wording and sections. Headline: "Your agents. Your cloud. Your controls." Hero lede: "Run AI agents in your cloud. Control what they can do, require approval for risky actions, and keep an audit trail."
+- Page flow: hero; identity, control and evidence; Warden example; deployment steps; early access. The fuller one-pager remains product context, not mandatory verbatim website copy.
 - Approved look (owner, 2026-10-26): grey stone fort, forest greens, no brown. The A3 uses the same palette tokens. Logo: the grey stone fort in assets/fort.svg (the A3's tower icon is not used on the site).
-- Rejected before, do not bring back: "Let your agents run free", animated animals walking on a fort, brown palette, "Any model" in the headline.
+- Current illustration direction (owner, 2026-11-07): restrained vector forts and small agents, with subtle motion and reduced-motion support. Keep the existing grey logo. Avoid pixel art, realistic 3D backgrounds, brown palettes and oversized decorative scenes.
 
 ## Evidence on Hand
 

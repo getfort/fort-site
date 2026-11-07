@@ -16,10 +16,9 @@ It is a Worker, not a Pages project: `wrangler pages deploy` is the wrong comman
 
 ## Early-access form
 
-The `#access` section embeds the Typeform **Fort early access** (`twrlRIKM`), a copy of the
-Cyclops form with Fort's questions and its own brown theme. Edit the questions and theme in
-Typeform, not here. To swap forms, change `data-tf-widget` and the `<noscript>` link in
-`index.html`.
+The `#access` section links to the existing **Fort early access** Typeform
+(`https://form.typeform.com/to/twrlRIKM`) in a new tab. Edit questions in Typeform.
+To change the form, update the external early-access link in `index.html`.
 
 ## Domains
 
@@ -29,17 +28,44 @@ either hostname already has an A, AAAA or CNAME record.
 
 ## Deploy
 
+Prerequisites: Node.js/npm and access to the Cloudflare account above. Authenticate
+with `npx wrangler login` if needed; `npx wrangler whoami` checks the active account.
+Do not put authentication tokens in this repository.
+
+Use a branch from current `main`, preview the change, and open a PR with its source.
+Deployment and merging are separate actions. If deployment is authorized before
+merge, mark the PR as already deployed and record the source commit and version ID.
+
 From `sites/fort/`:
 
 ```bash
-./build.sh && npx wrangler deploy
+./build.sh
+node --check script.js
+npx wrangler deploy
 ```
 
 `build.sh` assembles `dist/`, the only directory that gets published: `index.html`,
-`404.html`, `styles.css` and `script.js` (with content-hash cache-busting) and `assets/`.
+`404.html`, `styles.css`, `script.js` and `assets/`. The build adds content hashes
+to CSS, JavaScript, the logo and favicon.
 Unknown paths serve `404.html`.
 
+When adding a public file, add it to the copy list in `build.sh`. Check the production
+title and description, remove preview-only `noindex`, and use the real early-access
+form URL. Do not include comparison previews in the published output.
+
+## Verify after deployment
+
+- Open https://getfort.io and https://www.getfort.io and confirm the selected version.
+- Check the logo, CSS and JavaScript load without browser errors.
+- Check desktop/mobile navigation, the Warden example and the early-access link.
+  No form submission is needed to verify its destination.
+- Visit an unknown path and confirm an HTTP 404 with the Fort not-found page.
+- Record the returned Cloudflare version ID and validation results in the PR.
+
 ## Roll back
+
+Run these commands from `sites/fort/`. Inspect the history before rolling back:
+
 
 ```bash
 npx wrangler deployments list --name fort-web
@@ -48,6 +74,9 @@ npx wrangler deployments list --name fort-web
 ```bash
 npx wrangler rollback --name fort-web
 ```
+
+After rollback, verify the domains again. Rollback changes the live Worker, not Git;
+record it in the PR and reconcile the source before the next deployment.
 
 ## Local preview
 
@@ -61,7 +90,7 @@ Then open http://localhost:8003.
 
 ## Copy
 
-The page describes the product in the Fort repo (`docs/SPEC.md` in `~/Work/arcology`). Fort
+The page describes the product in the Fort repo (`docs/SPEC.md` in `~/Work/fort`). Fort
 is pre-launch and its repo is private until launch: don't claim it is generally available or
 that the code is public yet, and keep every control the page names in line with SPEC §3 (v0
 controls only; budgets and spend limits are never the pitch).

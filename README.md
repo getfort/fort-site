@@ -1,21 +1,16 @@
-# fort
+# Fort landing page
 
-Landing page for Fort: secure environments for your agents. "Any agent. Any harness. Your controls."
+Fort's illustrated, text-led landing page. Plain static HTML, CSS and JavaScript,
+hosted on Cloudflare Workers Static Assets at https://getfort.io.
 
-Plain static HTML/CSS/JS, no build tooling beyond [`build.sh`](build.sh). Hosted on
-Cloudflare Workers Static Assets.
+- `index.html`: the selected shorter-copy landing page, with inline vector forts and agents.
+- `styles.css`: off-white, sage and forest-green theme; responsive layouts and reduced-motion support.
+- `script.js`: mobile navigation, policy disclosure and the illustrative Warden replay.
+- `assets/`: the existing Fort logo and favicon.
+- `404.html`: matching not-found page.
+- `build.sh`: assembles the published `dist/` and adds content hashes to CSS and JavaScript.
 
-```
-index.html     the page
-404.html       served for unknown paths
-styles.css     light theme, grey stone and forest greens; the colour tokens are at the top
-script.js      the hero demo (an agent walks tool calls to the gate; Warden allows, asks, denies)
-assets/        fort.svg (the logo: a grey tower with eyes in the doorway) and favicon.svg
-build.sh       assembles dist/ (the only thing published)
-wrangler.jsonc Worker config
-docs/          internal docs — never published
-```
+Early-access buttons lead to the existing Fort Typeform (`twrlRIKM`).
+The Warden panel is an illustrative example, not a connected environment.
 
-The hero scene is inline SVG in `index.html`. The creatures are agents, one per sandbox tent;
-the one with the helmet is Warden. Deploying, the pre-deploy checklist and rollback:
-[docs/DEPLOY.md](docs/DEPLOY.md).
+See `docs/DEPLOY.md` for deployment and rollback instructions.
