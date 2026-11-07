@@ -40,13 +40,15 @@ From `sites/fort/`:
 
 ```bash
 ./build.sh
-node --check script.js
+for file in script.js warden.js arrivals.js docs/docs.js; do node --check "$file"; done
 npx wrangler deploy
 ```
 
 `build.sh` assembles `dist/`, the only directory that gets published: `index.html`,
-`404.html`, `styles.css`, `script.js` and `assets/`. The build adds content hashes
-to CSS, JavaScript, the logo and favicon.
+`404.html`, the landing-page CSS/JavaScript, `assets/`, and the three public files
+`docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Internal `docs/*.md` files
+are excluded. The build adds content hashes to every public CSS/JavaScript file,
+the logo and favicon, including references from the Docs page.
 Unknown paths serve `404.html`.
 
 When adding a public file, add it to the copy list in `build.sh`. Check the production
@@ -57,9 +59,11 @@ form URL. Do not include comparison previews in the published output.
 
 - Open https://getfort.io and https://www.getfort.io and confirm the selected version.
 - Check the logo, CSS and JavaScript load without browser errors.
-- Check desktop/mobile navigation, the Warden example and the early-access link.
+- Check `/docs/`, its policy and approval links, desktop/mobile navigation, the
+  Warden example and the early-access link.
   No form submission is needed to verify its destination.
 - Visit an unknown path and confirm an HTTP 404 with the Fort not-found page.
+- Verify `/docs/DEPLOY.md` is not published (HTTP 404).
 - Record the returned Cloudflare version ID and validation results in the PR.
 
 ## Roll back

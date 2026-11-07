@@ -11,8 +11,8 @@
   <meta property="og:url" content="https://getfort.io/">
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
-  <script src="script.js" defer></script>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="warden.css"><link rel="stylesheet" href="additions.css">
+  <script src="script.js" defer></script><script src="warden.js" defer></script><script src="arrivals.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -42,44 +42,53 @@
    <path d="M7 41C4 19 9 5 20 5s16 14 13 36c-6 4-20 4-26 0Z" fill="currentColor" stroke="#577363" stroke-width="1.3"/>
    <path d="M10 22c0-8 20-8 20 0v7c-5 4-15 4-20 0Z" fill="#28443d"/><path d="M16 23v3m8-3v3" stroke="#e9ead8" stroke-width="2.1" stroke-linecap="round"/>
   </symbol>
+  <symbol id="warden" viewBox="0 0 80 130"><g transform="translate(38 115)">       <g class="guard-body"><path d="M-21-60-34-7q34 13 68 0L21-60" fill="#587967" stroke="#385c48" stroke-width="1.5"/>
+        <path d="M-10-5-13 5m23-10 13 5" stroke="#304e3f" stroke-width="5" stroke-linecap="round"/>
+        <path d="M-23-57v-29q0-18 23-18t23 18v29q-23 13-46 0Z" fill="#d5dfca" stroke="#70876c" stroke-width="1.6"/>
+        <path d="M-25-83h50v7h-50Z" fill="#aabfa3"/><path d="M-17-74h34v12q-17 8-34 0Z" fill="#28463b"/><path d="M-8-70v4m16-4v4" stroke="#e8d29b" stroke-width="3" stroke-linecap="round"/>
+        <path d="m0-102 0-9" stroke="#56765c" stroke-width="3"/><path d="m-6-94 6-5 6 5-6 6Z" fill="#f1e5bc"/>
+        <path d="M-10-47h20v18l-10 8-10-8Z" fill="#b3c7a8" stroke="#d5dec9"/><path d="m-5-36 4 4 7-9" fill="none" stroke="#43684e" stroke-width="2"/>
+        <g class="guard-arm"><path d="m-22-48-16 15-9-3" stroke="#42644e" stroke-width="7" stroke-linecap="round"/><g class="guard-paper"><rect x="-56" y="-54" width="26" height="32" rx="3" fill="#faf7e9" stroke="#8b9e7d"/><path d="M-50-46h14m-14 6h14m-14 6h9" stroke="#94a18a" stroke-width="1.5"/></g></g>
+        <g class="guard-shield"><path d="M19-48 43-43v25Q31-7 19-18Z" fill="#d3ddc6" stroke="#78916f" stroke-width="1.5"/><path class="shield-check" d="m25-30 5 5 8-11" fill="none" stroke="#557b56" stroke-width="2"/><path class="shield-cross" d="m26-35 11 11m0-11-11 11" stroke="#a36b56" stroke-width="2"/></g>
+       </g>
+</g></symbol>
  </defs>
 </svg>
 <header class="header">
  <div class="nav-wrap">
   <a class="brand" href="#top" aria-label="Fort home"><img src="assets/fort.svg" width="34" height="34" alt=""><span>Fort</span></a>
-  <nav class="nav" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#governance">Governance</a></nav>
+  <nav class="nav" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#governance">How it works</a><a href="#evidence">Governance</a><a href="docs/">Docs</a></nav>
   <a class="button small" href="#access">Request access <span aria-hidden="true">↗</span></a>
   <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation"><span></span><span></span></button>
  </div>
- <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#platform">Platform</a><a href="#how">How it works</a><a href="#governance">Governance</a><a href="#access">Request access</a></nav>
+ <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#platform">Platform</a><a href="#governance">How it works</a><a href="#evidence">Governance</a><a href="docs/">Docs</a><a href="#access">Request access</a></nav>
 </header>
 <main id="main">
  <section id="top" class="hero">
   <div class="hero-copy wrap">
    <p class="eyebrow"><span class="status-dot"></span> Security & governance for AI agents</p>
    <h1><span>Your agents.</span> <span>Your cloud.</span><br><em>Your controls.</em></h1>
-   <p class="lede">Run AI agents in your cloud. Control what they can do,<br class="desktop-break"> require approval for risky actions, and keep an audit trail.</p>
-   <div class="actions"><a class="button" href="#access">Request early access <span aria-hidden="true">↗</span></a><a class="text-link" href="#how">See how Fort works <span aria-hidden="true">↓</span></a></div>
+   <p class="lede">A home for AI agents that run on their own, inside your cloud.<br class="desktop-break"> Under rules you set, with proof of every action.</p>
+   <div class="actions"><a class="button" href="#access">Request early access <span aria-hidden="true">↗</span></a><a class="text-link" href="#governance">See how Fort works <span aria-hidden="true">↓</span></a></div>
   </div>
   <svg class="hero-landscape" viewBox="0 0 1440 235" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
    <path d="M0 143 68 125 117 143 195 102 265 135 322 118 420 155 505 138 609 166 701 142 802 166 908 145 1010 157 1102 112 1161 129 1260 97 1362 137 1440 113V235H0Z" fill="#e9eee7"/>
    <path d="M0 166 80 143 207 174 311 152 447 179 568 162 699 187 826 164 966 179 1090 148 1244 158 1370 134 1440 157V235H0Z" fill="#dce5da"/>
-   <use href="#wall" x="-20" y="130" width="300" height="100"/><use href="#tower" x="75" y="9" width="113" height="203"/><use href="#gate" x="175" y="101" width="130" height="110"/>
-   <use href="#wall" x="1190" y="125" width="300" height="100"/><use href="#tower" x="1283" y="0" width="119" height="214"/><use href="#gate" x="1130" y="99" width="133" height="111"/>
-   <use href="#gate" x="655" y="118" width="112" height="94"/>
+   <g opacity=".4"><use href="#wall" x="-30" y="145" width="230" height="80"/><use href="#tower" x="85" y="79" width="70" height="126"/><use href="#wall" x="1230" y="151" width="230" height="80"/></g>
+   <use href="#wall" x="744" y="148" width="177" height="64"/><use href="#tower" x="820" y="58" width="84" height="151"/><use href="#gate" x="641" y="83" width="163" height="136"/>
    <path d="M0 213C129 164 225 194 343 209S554 237 710 210 919 221 1089 207 1280 169 1440 195V235H0Z" fill="#f7f9f5"/>
    <path d="M0 213C129 164 225 194 343 209S554 237 710 210 919 221 1089 207 1280 169 1440 195" fill="none" stroke="#a5b8a0" stroke-width="1.3"/>
-   <g class="walker walk-one"><use href="#agent" x="390" y="184" width="24" height="30" style="color:#afc6b5"/></g>
-   <g class="walker walk-two"><use href="#agent" x="454" y="192" width="21" height="27" style="color:#b8c8cb"/></g>
-   <g class="walker walk-three"><use href="#agent" x="973" y="185" width="22" height="28" style="color:#b8c8ad"/></g>
-   <use href="#agent" x="1031" y="184" width="20" height="26" style="color:#d6c9a4"/>
+<g class="arrival-scene" style="--travel:162px;--arrival-delay:0s"><g class="arrival-resident"><use href="#agent" x="712" y="177" width="22" height="27.5" style="color:#adc7b5"/></g><g class="arrival-incoming"><g class="arrival-bob"><use href="#agent" x="550" y="185" width="22" height="27.5" style="color:#adc7b5"/></g></g></g><use href="#warden" x="744" y="170" width="29" height="47"/>
   </svg>
   <div class="assurances"><span>Self-hosted in your cloud</span><i></i><span>Any agent or framework</span><i></i><span>Your policies, enforced</span></div>
+ </section>
+ <section id="problem" class="problem-note section">
+  <div class="wrap problem-grid"><div><p class="eyebrow">From demos to real systems</p><h2>Agents are ready<br>for <em>real systems.</em></h2></div><div class="problem-prose"><h3>Nobody wants to be the one who let them in.</h3><p>An agent that can restart a deployment can also delete one. A bad plan, a confused model or a poisoned web page is one tool call away from production, so most agents stay in demos.</p><p>Fort gives them a place to live where every call is checked against your policy, risky ones wait for a person, and nothing leaves the walls unless you said it could.</p></div></div>
  </section>
  <section id="platform" class="platform section">
   <div class="wrap">
    <div class="section-intro"><p class="eyebrow">A foundation for trust</p><h2>Know the agent.<br>Control the action.</h2><p class="body-copy">Fort brings identity, policy enforcement and evidence<br class="desktop-break"> to the agents working across your systems.</p></div>
-   <svg class="platform-scene" viewBox="0 0 420 230" aria-hidden="true"><path d="m0 192 90-40 60 20 94-63 70 26 106-60v155H0" fill="#dce5da"/><use href="#wall" x="207" y="130" width="240" height="90"/><use href="#tower" x="278" y="5" width="110" height="198"/><path d="M0 229q150-20 250-44t170-20v65H0" fill="#edf2eb"/><path d="M0 229q150-20 250-44t170-20" fill="none" stroke="#b8c9b2"/><use href="#agent" x="118" y="186" width="20" height="26" style="color:#abc1b0"/><use href="#agent" x="159" y="176" width="19" height="24" style="color:#b8c8cb"/></svg>
+   <svg class="platform-scene" viewBox="0 0 420 230" aria-hidden="true"><path d="m0 192 90-40 60 20 94-63 70 26 106-60v155H0" fill="#dce5da"/><use href="#agent" x="253" y="126" width="23" height="29" style="color:#abc1b0"/><use href="#wall" x="207" y="130" width="240" height="90"/><use href="#tower" x="278" y="5" width="110" height="198"/><path d="M0 229q150-20 250-44t170-20v65H0" fill="#edf2eb"/><path d="M0 229q150-20 250-44t170-20" fill="none" stroke="#b8c9b2"/><use href="#warden" x="314" y="157" width="30" height="49"/></svg>
    <div class="pillars">
     <article><span class="number">01 / Identity</span><h3>Know who's acting.</h3><p>Give every agent a unique identity. Know who owns it, which version is running, and who approved its actions.</p></article>
     <article><span class="number">02 / Control</span><h3>Set the boundaries.</h3><p>Define the tools and data each agent can use. Require a person to approve risky actions before they happen.</p></article>
@@ -87,36 +96,81 @@
    </div>
   </div>
  </section>
- <section id="governance" class="governance section">
-  <div class="wrap gate-layout">
-   <div class="gate-copy"><p class="eyebrow">Meet Warden</p><h2>Every tool call<br>passes through<br class="wide-break"> Warden.</h2><p>Allow what your policy permits.<br>Ask a person before risk.<br>Deny everything else.</p><a href="#policy-detail" class="text-link light" id="policy-toggle" aria-expanded="false">The rules behind the decision <span aria-hidden="true">+</span></a><div id="policy-detail" hidden><p>A call that matches no rule is denied. Deny takes precedence over ask; ask takes precedence over allow. Every decision is recorded.</p></div></div>
-   <div class="decision-card">
-    <div class="card-heading"><div><span class="live-dot"></span><strong>Warden</strong><span class="card-subtitle"> / Decisions</span></div><span class="example">Example</span></div>
-    <div class="agent-context"><span class="agent-dot"></span><code>sre-agent</code><span>production / checkout</span></div>
-    <div class="decision-row" data-step="0"><div><code>read_logs</code><small>Read deployment logs</small></div><span class="badge allow">Allow</span></div>
-    <div class="decision-row" data-step="1"><div><code>restart_deployment</code><small>A named person must approve</small></div><span class="badge ask">Ask</span></div>
-    <div class="decision-row" data-step="2"><div><code>delete_namespace</code><small>Outside the agent's policy</small></div><span class="badge deny">Deny</span></div>
-    <div class="card-footer"><span id="demo-status" role="status">Every decision leaves a record.</span><button id="replay" aria-label="Replay example policy checks">Replay <span aria-hidden="true">↻</span></button></div>
-    <p class="demo-note">Illustrative policy decisions, not a connected environment.</p>
+ <section id="governance" class="warden-section section">
+  <div class="wrap">
+   <div class="warden-intro"><div><p class="eyebrow">Meet Warden</p><h2>Room to act.<br><em>Boundaries that hold.</em></h2></div><p>The sandbox keeps your agent inside.<br> Warden checks every request that leaves.<br> Allow, ask a person, or deny.</p></div>
+   <div class="warden-demo" data-phase="ready" data-kind="allow">
+    <div class="demo-top"><span><span class="status-dot"></span> WARDEN IN ACTION</span><span>Illustrative example</span></div>
+    <div class="scenario-tabs" role="group" aria-label="Choose a policy example">
+     <button data-scenario="allow" aria-pressed="true"><span class="tab-mark">✓</span> Read logs <small>Allow</small></button>
+     <button data-scenario="ask" aria-pressed="false"><span class="tab-mark">↗</span> Restart service <small>Ask a person</small></button>
+     <button data-scenario="deny" aria-pressed="false"><span class="tab-mark">×</span> Delete namespace <small>Deny</small></button>
+    </div>
+    <div class="warden-stage">
+     <div class="stage-decision"><span id="decision-label">Checking policy</span><p id="decision-reason">A request is on its way to Warden.</p></div>
+     <svg class="warden-map" viewBox="0 0 1000 350" role="img" aria-labelledby="map-title map-desc">
+      <title id="map-title">An agent carries a request to Warden, the guard at the gate</title><desc id="map-desc">The agent walks to Warden and hands over a request. Warden reads it, allows it through or raises a shield to deny it. The agent then returns to its sandbox.</desc>
+      <defs><clipPath id="arch-clip"><path d="M476 228v-46a24 24 0 0 1 48 0v46Z"/></clipPath></defs>
+      <path d="M0 205Q100 148 205 183T410 188 625 170 840 190 1000 146V350H0Z" fill="#edf2e9"/>
+      <path d="M0 270Q160 225 330 258T630 251 1000 237V350H0Z" fill="#e4ecdf" opacity=".6"/>
+      <path d="M85 246Q260 210 500 228T915 229" fill="none" stroke="#bdcbb8" stroke-width="1.3"/>
+      <path d="M162 242Q315 230 475 230M525 230Q670 230 832 230" fill="none" stroke="#9ab19b" stroke-width="1.5" stroke-dasharray="3 7"/>
+      <g opacity=".28"><use href="#tower" x="23" y="105" width="48" height="87"/><use href="#wall" x="913" y="143" width="132" height="50"/><use href="#tower" x="935" y="71" width="68" height="122"/></g>
+      <g class="sandbox-enclosure">
+       <path d="M137 244V121h18v-12h16v12h24v-12h16v12h24v-12h16v12h24v-12h16v12h24v-12h16v12h24v-12h16v12h24v-12h16v12h19v123Z" fill="#dae4d3" stroke="#a4b99d" stroke-width="1.3"/>
+       <path d="M138 139h280M150 165h70m20 0h80m20 0h60M165 194h80m20 0h80M140 221h90m30 0h80" stroke="#c4d2bc" fill="none"/>
+       <path d="M137 244h283l-24 14H158Z" fill="#c6d7bf"/>
+       <path d="M133 244V95h9v-12h10v12h10v-12h10v12h10v149Z" fill="#c0d0b8" stroke="#98ad91"/>
+       <path d="M401 244V95h9v-12h10v12h10v-12h10v12h10v149Z" fill="#c0d0b8" stroke="#98ad91"/>
+       <path d="M424 83V51m0 2 26 7-26 8" fill="#799d7a" stroke="#7f9975"/>
+       <text x="286" y="153" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" fill="#617d5e" letter-spacing="2">SANDBOX</text>
+       <text x="286" y="172" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="10" fill="#7e9275">No direct network access</text>
+      </g>
+      <g class="workstation"><path d="M275 243v-24h46v24m-46-19h46" fill="#bdceba" stroke="#8aa080"/><rect x="277" y="195" width="40" height="26" rx="3" fill="#dce7d5" stroke="#789572"/><rect class="terminal-screen" x="281" y="199" width="32" height="17" rx="1" fill="#345c4a"/><path d="m285 204 4 3-4 3m8 1h8" stroke="#c7dfbb" stroke-width="1.5" fill="none"/></g>
+      <g class="scene-agent"><ellipse cx="0" cy="5" rx="31" ry="6" fill="#bdceba" opacity=".5"/>
+       <g class="agent-facing"><g class="agent-body">
+        <path class="agent-leg left-leg" d="M-9-6-15 4" stroke="#365547" stroke-width="3" stroke-linecap="round"/><path class="agent-leg right-leg" d="m9-6 7 10" stroke="#365547" stroke-width="3" stroke-linecap="round"/>
+        <path d="M-23-11c-4-35 3-58 23-58s27 23 23 58c-12 7-34 7-46 0Z" fill="#bacfbf" stroke="#627f6c" stroke-width="1.6"/>
+        <path d="M-17-43c4-10 30-10 34 0v14c-7 6-27 6-34 0Z" fill="#29483f"/><path d="M-7-41v5m14-5v5" stroke="#eceddd" stroke-width="3" stroke-linecap="round"/>
+        <path d="m-20-26-7 14" stroke="#627f6c" stroke-width="3" stroke-linecap="round"/>
+        <g class="agent-hand"><path d="m20-29 14 6" stroke="#627f6c" stroke-width="3" stroke-linecap="round"/><g class="carried-letter"><rect x="25" y="-34" width="23" height="17" rx="3" fill="#faf7e9" stroke="#8b9e7d"/><path d="m26-32 10 8 11-8" fill="none" stroke="#8b9e7d"/></g></g>
+       </g></g>
+      </g>
+      <g class="warden-character" transform="translate(470 235)"><ellipse cx="0" cy="7" rx="39" ry="7" fill="#adc2a8" opacity=".5"/>
+       <g class="guard-body"><path d="M-21-60-34-7q34 13 68 0L21-60" fill="#587967" stroke="#385c48" stroke-width="1.5"/>
+        <path d="M-10-5-13 5m23-10 13 5" stroke="#304e3f" stroke-width="5" stroke-linecap="round"/>
+        <path d="M-23-57v-29q0-18 23-18t23 18v29q-23 13-46 0Z" fill="#d5dfca" stroke="#70876c" stroke-width="1.6"/>
+        <path d="M-25-83h50v7h-50Z" fill="#aabfa3"/><path d="M-17-74h34v12q-17 8-34 0Z" fill="#28463b"/><path d="M-8-70v4m16-4v4" stroke="#e8d29b" stroke-width="3" stroke-linecap="round"/>
+        <path d="m0-102 0-9" stroke="#56765c" stroke-width="3"/><path d="m-6-94 6-5 6 5-6 6Z" fill="#f1e5bc"/>
+        <path d="M-10-47h20v18l-10 8-10-8Z" fill="#b3c7a8" stroke="#d5dec9"/><path d="m-5-36 4 4 7-9" fill="none" stroke="#43684e" stroke-width="2"/>
+        <g class="guard-arm"><path d="m-22-48-16 15-9-3" stroke="#42644e" stroke-width="7" stroke-linecap="round"/><g class="guard-paper"><rect x="-56" y="-54" width="26" height="32" rx="3" fill="#faf7e9" stroke="#8b9e7d"/><path d="M-50-46h14m-14 6h14m-14 6h9" stroke="#94a18a" stroke-width="1.5"/></g></g>
+        <g class="guard-shield"><path d="M19-48 43-43v25Q31-7 19-18Z" fill="#d3ddc6" stroke="#78916f" stroke-width="1.5"/><path class="shield-check" d="m25-30 5 5 8-11" fill="none" stroke="#557b56" stroke-width="2"/><path class="shield-cross" d="m26-35 11 11m0-11-11 11" stroke="#a36b56" stroke-width="2"/></g>
+       </g>
+      </g>
+      <g class="guard-bubble" transform="translate(470 100)"><rect x="-54" y="-30" width="108" height="32" rx="16" fill="#285b46"/><path d="m-6 0 6 7 6-7" fill="#285b46"/><text id="guard-speech" text-anchor="middle" y="-10" fill="#fafbf6" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12">Checking…</text></g>
+      <g class="tool-building"><ellipse cx="840" cy="245" rx="53" ry="9" fill="#c6d4c1" opacity=".5"/><path d="M802 231v-80l38-19 38 19v80Z" fill="#e0e8dc" stroke="#99ad96"/><path d="m840 132 38 19v80h-38Z" fill="#ccd9c6"/><path d="m802 151 38 20 38-20m-38 20v60" stroke="#99ad96" fill="none"/><path d="m812 171 17 9m-17 8 17 9m24-17 14-7m-14 24 14-7" stroke="#7e987d" stroke-width="2"/><circle class="tool-light" cx="853" cy="218" r="3" fill="#809780"/></g>
+      <g class="request-packet"><circle r="17" fill="#f9faf7" stroke="#72947a"/><path d="M-7-5H7V5H-7Zm0 0L0 0l7-5" fill="none" stroke="#285b46" stroke-width="1.2"/></g>
+      <g class="stop-mark"><circle cx="433" cy="231" r="14" fill="#f3e7df" stroke="#b97d68"/><path d="m428 226 10 10m0-10-10 10" stroke="#a06450" stroke-width="1.7"/></g>
+      <g class="destination-check"><circle cx="840" cy="116" r="13" fill="#285b46"/><path d="m834 116 4 4 8-9" fill="none" stroke="#f9faf7" stroke-width="2"/></g>
+      <g fill="#304e3d" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"><text x="250" y="289" font-size="14">Your agent</text><text x="470" y="279" font-family="Georgia,serif" font-size="24">Warden</text><text x="840" y="289" font-size="14">Your tools &amp; systems</text><g fill="#7b8b76" font-size="11"><text x="250" y="309">sre-agent</text><text x="470" y="301">Your policy, enforced</text><text x="840" y="309">production / checkout</text></g></g>
+     </svg>
+    </div>
+    <div class="request-detail"><div><span class="detail-label">TOOL CALL</span><code id="request-call">read_logs</code><span class="request-scope">checkout / api</span></div><span id="request-outcome" class="outcome">In transit</span></div>
+    <div class="human-approval" hidden><div><span class="approval-avatar">S</span><p><strong>A person makes this call.</strong><span>Demo: act as Sara and approve this restart once.</span></p></div><button id="approve-request">Approve this request <span>↗</span></button></div>
+    <div class="warden-bottom"><p id="evidence-status" role="status" aria-live="polite">Following the request from agent to tool.</p><div class="motion-controls"><button id="warden-pause" aria-pressed="false">Pause</button><button id="warden-replay">Replay <span>↻</span></button></div></div>
    </div>
+   <p class="warden-footnote">Allowed or denied. Every decision leaves a record.</p>
+   <div class="human-story" id="human-oversight"><div><p class="eyebrow">Human oversight</p><h3>Risky actions wait<br> for a person.</h3><a class="text-link" href="docs/#approvals">How approvals work <span aria-hidden="true">↗</span></a></div><ol><li><span>01</span><div><strong>The request is held.</strong><p>Warden asks before the action happens.</p></div></li><li><span>02</span><div><strong>A named person decides.</strong><p>Review the exact action, sign in again, and approve or deny.</p></div></li><li><span>03</span><div><strong>The approval stays on record.</strong><p>Know who allowed the action and what happened next.</p></div></li></ol></div>
   </div>
-  <svg class="gate-landscape" viewBox="0 0 650 170" aria-hidden="true"><use href="#wall" x="-15" y="85" width="310" height="115"/><use href="#gate" x="69" y="10" width="175" height="145"/><path d="M-30 170q140-50 233-22t180-10 100-55 140-4" fill="none" stroke="#b9d0bd" stroke-width="1.5"/><path d="M365 143q66 2 81-25t172-4M365 143q70 12 100 8t153-1" fill="none" stroke="#7d9d8c"/><use href="#agent" x="147" y="118" width="24" height="30" style="color:#adc3b1"/></svg>
  </section>
- <section id="how" class="journey section">
-  <div class="wrap"><p class="eyebrow">Your cloud. Start to finish.</p><h2>From deployment to evidence.</h2>
-   <div class="steps">
-    <article><div class="landmark"><svg viewBox="0 0 200 140" aria-hidden="true"><path d="m0 125 40-22 55 7 40-15 65 28v17H0" fill="#e5ebe2"/><use href="#tower" x="58" y="0" width="77" height="139"/></svg></div><h3><span>01</span> Deploy</h3><p>Run Fort in your cloud. Give each agent its own isolated sandbox.</p><code class="command">fort up</code></article>
-    <article><div class="landmark"><svg viewBox="0 0 200 140" aria-hidden="true"><use href="#gate" x="43" y="44" width="112" height="94"/></svg></div><h3><span>02</span> Define</h3><p>Declare your agents, tools and permissions in policies your team can review.</p><code class="command">fort apply</code></article>
-    <article><div class="landmark"><svg viewBox="0 0 200 140" aria-hidden="true"><path d="m0 129 70-17 50 7 80-15v36H0" fill="#e5ebe2"/><use href="#gate" x="48" y="30" width="129" height="108"/><use href="#agent" x="28" y="112" width="18" height="23" style="color:#adc3b1"/></svg></div><h3><span>03</span> Govern</h3><p>Warden checks every tool call. Risky actions wait for human approval.</p><span class="step-note">Allow · Ask · Deny</span></article>
-    <article><div class="landmark"><svg viewBox="0 0 200 140" aria-hidden="true"><path d="m0 130 70-23 50 12 80-15v36H0" fill="#e5ebe2"/><use href="#tower" x="51" y="1" width="76" height="137"/><use href="#gate" x="110" y="69" width="80" height="67"/></svg></div><h3><span>04</span> Verify</h3><p>Review the audit trail and verify the evidence independently, offline.</p><code class="command">fort ledger verify</code></article>
-   </div>
-  </div>
+ <section id="evidence" class="evidence-note section">
+  <div class="wrap evidence-grid"><div><p class="eyebrow">Evidence, in your hands</p><h2>Governance<br> you can prove.</h2></div><div><p>Regulators and auditors want to know who allowed an agent to act, and to see proof. Fort answers both by default, from records you hold in your own cloud.</p><a class="text-link" href="docs/#evidence">Explore the audit trail <span aria-hidden="true">↗</span></a><a class="text-link policy-doc-link" href="docs/#policies">Read the policy guide <span aria-hidden="true">↗</span></a></div></div><div class="wrap proof-points"><article><span>01 / Identity</span><h3>Who acted.</h3><p>The agent’s identity and the policy behind each decision.</p></article><article><span>02 / Accountability</span><h3>Who approved.</h3><p>The named person who authorized a risky action.</p></article><article><span>03 / Evidence</span><h3>What happened.</h3><p>A tamper-evident record of allowed and denied calls, verifiable offline.</p></article></div>
  </section>
  <section id="access" class="access section">
   <div class="wrap access-copy"><p class="eyebrow"><span class="status-dot"></span> Early access</p><h2>Give your agents<br>room to work.</h2><p>Keep control of what happens next.</p><a class="button" href="https://form.typeform.com/to/twrlRIKM" target="_blank" rel="noopener noreferrer">Request early access <span aria-hidden="true">↗</span></a><small>For platform and security teams building with agents.</small></div>
   <svg class="footer-landscape" viewBox="0 0 1440 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g opacity=".55"><use href="#wall" x="-50" y="90" width="290" height="110"/><use href="#tower" x="40" y="0" width="100" height="180"/><use href="#wall" x="1200" y="90" width="290" height="110"/><use href="#tower" x="1290" y="5" width="100" height="180"/></g><path d="M0 159q160-62 320 1t400 17 390-10 330-21v54H0" fill="#dce6d9" opacity=".6"/><path d="M0 185q260-35 420-5t460 0 560-8v28H0" fill="#e6eee2"/></svg>
  </section>
 </main>
-<footer class="footer"><div class="wrap"><a class="brand" href="#top" aria-label="Fort home"><img src="assets/fort.svg" width="27" height="27" alt=""><span>Fort</span></a><p>Hold the fort.</p><span>© 2026 Fort</span><a href="#top" class="back-top">Back to top ↑</a></div></footer>
+<footer class="footer"><div class="wrap"><a class="brand" href="#top" aria-label="Fort home"><img src="assets/fort.svg" width="27" height="27" alt=""><span>Fort</span></a><p>Hold the fort.</p><a class="footer-docs" href="docs/">Documentation ↗</a><span>© 2026 Fort</span><a href="#top" class="back-top">Back to top ↑</a></div></footer>
 </body>
 </html>

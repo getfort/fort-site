@@ -1,38 +1,32 @@
 #!/usr/bin/env bash
-# Assemble the publishable site into ./dist.
-# Only these files are public — docs/ and .claude/ stay out.
+# Assemble only public site files; internal docs/*.md stay out.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# The early-access button must point somewhere real before anything ships.
 if grep -q 'href="EARLY_ACCESS_URL"' index.html; then
   echo "index.html still has the EARLY_ACCESS_URL placeholder; set the early-access link first." >&2
   exit 1
 fi
 
 rm -rf dist
-mkdir -p dist
-cp index.html 404.html styles.css script.js dist/
+mkdir -p dist/docs
+cp index.html 404.html styles.css script.js warden.css warden.js arrivals.js additions.css dist/
+cp docs/index.html docs/docs.css docs/docs.js dist/docs/
 cp -R assets dist/assets
 
-# Cache-busting: stamp a content hash onto styles.css, script.js and the logo files so a deploy
-# can never leave a browser pairing new HTML with a stale stylesheet.
 hash_of() {
   if command -v md5 >/dev/null 2>&1; then md5 -q "$1"; else md5sum "$1" | cut -d' ' -f1; fi
 }
-css_v=$(hash_of dist/styles.css | cut -c1-10)
-js_v=$(hash_of dist/script.js | cut -c1-10)
-logo_v=$(hash_of dist/assets/fort.svg | cut -c1-10)
-icon_v=$(hash_of dist/assets/favicon.svg | cut -c1-10)
 
-for page in dist/index.html dist/404.html; do
-  sed -i.bak "s|href=\"\(/\{0,1\}\)styles.css\"|href=\"\1styles.css?v=${css_v}\"|" "$page"
-  sed -i.bak "s|src=\"script.js\"|src=\"script.js?v=${js_v}\"|" "$page"
-  # The logo and favicon change colour with the theme, so they get a content hash too.
-  sed -i.bak "s|assets/fort.svg\"|assets/fort.svg?v=${logo_v}\"|g" "$page"
-  sed -i.bak "s|assets/favicon.svg\"|assets/favicon.svg?v=${icon_v}\"|g" "$page"
+# Stamp shared and page-specific assets, including references from /docs/.
+for asset in styles.css script.js warden.css warden.js arrivals.js additions.css docs/docs.css docs/docs.js assets/fort.svg assets/favicon.svg; do
+  version=$(hash_of "dist/$asset" | cut -c1-10)
+  asset_name=${asset##*/}
+  while IFS= read -r -d '' page; do
+    sed -i.bak "s|${asset_name}\"|${asset_name}?v=${version}\"|g" "$page"
+    rm -f "$page.bak"
+  done < <(find dist -name '*.html' -print0)
 done
-rm -f dist/*.bak
 
-echo "Built dist/ (css v=${css_v}, js v=${js_v}):"
+echo 'Built public landing page, documentation and assets:'
 find dist -type f | sort

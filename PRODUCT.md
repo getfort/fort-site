@@ -35,7 +35,9 @@ Visitors read this as a buyer evaluating risk: they look for the controls, the e
 
 - Name: Fort. Domain: getfort.io. Decision component named Warden in product messages.
 - Current selected version (owner, 2026-11-07): the shorter illustrated landing page, chosen after comparing it with a version using the live site's full wording and sections. Headline: "Your agents. Your cloud. Your controls." Hero lede: "Run AI agents in your cloud. Control what they can do, require approval for risky actions, and keep an audit trail."
-- Page flow: hero; identity, control and evidence; Warden example; deployment steps; early access. The fuller one-pager remains product context, not mandatory verbatim website copy.
+- Latest approved page flow (2026-11-07): hero with an agent entering one guarded fort; compact problem statement; identity, control and evidence; animated Warden and human oversight; audit/governance; early access. The owner removed the entire four-step deployment section.
+- Public Docs at `/docs/` hold the longer material: three pillars, sandbox isolation, YAML policy backed by Cedar, approvals, audit controls, deployment concepts and roadmap. Human oversight and the exact regulator/auditor paragraph also remain on the landing page.
+- Warden is a distinct guard character. The agent works inside its sandbox, brings a request to Warden, and returns inside. Only allowed requests reach tools; risky requests wait for a named person. Preserve the existing typography, palette, logo and restrained illustrations.
 - Approved look (owner, 2026-10-26): grey stone fort, forest greens, no brown. The A3 uses the same palette tokens. Logo: the grey stone fort in assets/fort.svg (the A3's tower icon is not used on the site).
 - Current illustration direction (owner, 2026-11-07): restrained vector forts and small agents, with subtle motion and reduced-motion support. Keep the existing grey logo. Avoid pixel art, realistic 3D backgrounds, brown palettes and oversized decorative scenes.
 
