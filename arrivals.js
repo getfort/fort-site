@@ -1,7 +1,7 @@
 (() => {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const enterFort = scene => {
+  const enterFort = async scene => {
     const ground = scene.closest('svg').querySelector('.hero-ground');
     const incoming = scene.querySelector('.arrival-incoming');
     const startX = 561;
@@ -30,11 +30,25 @@
     });
     scene.classList.replace('arrival-pending', 'arrival-entered');
     // One easing curve for the entire walk, not one restart per waypoint.
-    incoming.animate(frames, {
+    await incoming.animate(frames, {
       duration: 3600,
       easing: 'cubic-bezier(.15, 0, .85, 1)',
       fill: 'forwards'
-    });
+    }).finished;
+    // Disappear into the doorway, then rise behind the fixed battlements.
+    await incoming.animate([
+      {opacity: 1, transform: 'translate(162px, -21.45px)'},
+      {opacity: 0, transform: 'translate(162px, -26px)'}
+    ], {duration: 400, easing: 'ease-in', fill: 'forwards'}).finished;
+    await scene.querySelector('.arrival-resident').animate([
+      {opacity: 1, transform: 'translateY(28px)'},
+      {opacity: 1, transform: 'translateY(0)'}
+    ], {
+      duration: 800,
+      delay: 180,
+      easing: 'cubic-bezier(.22, 1, .36, 1)',
+      fill: 'both'
+    }).finished;
   };
 
   const observer = new IntersectionObserver(entries => {
