@@ -48,7 +48,8 @@ npx wrangler deploy
 `404.html`, the landing-page CSS/JavaScript, `assets/`, and the documentation home and shared assets
 `docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Public guides use
 `index.html` in `docs/understand/`, `docs/deploy/`, `docs/policy/`,
-`docs/operations/`, `docs/aws/`, `docs/gcp/`, and `docs/tools/`. Internal `docs/*.md` files
+`docs/operations/`, `docs/aws/`, `docs/gcp/`, and `docs/tools/`, their `reference/` pages, and the two allowlisted Terraform
+ZIP/checksum files in `downloads/`. Internal `docs/*.md` files
 are excluded. The build adds content hashes to every public CSS/JavaScript file,
 the logo and favicon, including references from the Docs page.
 Unknown paths serve `404.html`.
