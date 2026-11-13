@@ -9,9 +9,13 @@ if grep -q 'href="EARLY_ACCESS_URL"' index.html; then
 fi
 
 rm -rf dist
-mkdir -p dist/docs
+mkdir -p dist/docs/aws dist/docs/gcp dist/docs/tools dist/docs/understand dist/docs/deploy dist/docs/policy dist/docs/operations
 cp index.html 404.html styles.css script.js warden.css warden.js arrivals.js additions.css dist/
 cp docs/index.html docs/docs.css docs/docs.js dist/docs/
+cp docs/aws/index.html dist/docs/aws/
+cp docs/gcp/index.html dist/docs/gcp/
+cp docs/tools/index.html dist/docs/tools/
+for page in understand deploy policy operations; do cp "docs/$page/index.html" "dist/docs/$page/"; done
 cp -R assets dist/assets
 
 hash_of() {

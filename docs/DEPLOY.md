@@ -45,8 +45,10 @@ npx wrangler deploy
 ```
 
 `build.sh` assembles `dist/`, the only directory that gets published: `index.html`,
-`404.html`, the landing-page CSS/JavaScript, `assets/`, and the three public files
-`docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Internal `docs/*.md` files
+`404.html`, the landing-page CSS/JavaScript, `assets/`, and the documentation home and shared assets
+`docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Public guides use
+`index.html` in `docs/understand/`, `docs/deploy/`, `docs/policy/`,
+`docs/operations/`, `docs/aws/`, `docs/gcp/`, and `docs/tools/`. Internal `docs/*.md` files
 are excluded. The build adds content hashes to every public CSS/JavaScript file,
 the logo and favicon, including references from the Docs page.
 Unknown paths serve `404.html`.
@@ -59,8 +61,11 @@ form URL. Do not include comparison previews in the published output.
 
 - Open https://getfort.io and https://www.getfort.io and confirm the selected version.
 - Check the logo, CSS and JavaScript load without browser errors.
-- Check `/docs/`, its policy and approval links, desktop/mobile navigation, the
+- Check `/docs/`, `/docs/understand/`, `/docs/deploy/`, `/docs/policy/`,
+  `/docs/operations/`, `/docs/aws/`, `/docs/gcp/`, `/docs/tools/`, their cross-links and section navigation, the policy and approval links, desktop/mobile navigation, the
   Warden example and the early-access link.
+  Check old `/docs/#policies` and `/docs/#agents` deep links, the shared
+  documentation navigation disclosure on mobile, and local page contents.
   No form submission is needed to verify its destination.
 - Visit an unknown path and confirm an HTTP 404 with the Fort not-found page.
 - Verify `/docs/DEPLOY.md` is not published (HTTP 404).

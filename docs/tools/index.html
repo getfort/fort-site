@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="canonical" href="https://getfort.io/docs/tools/"><meta name="description" content="Connect agents & tool servers: Fort early-access documentation."><title>Connect agents & tool servers — Fort Docs</title><link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="../docs.css"><script src="../../script.js" defer></script><script src="../docs.js" defer></script></head><body class="docs-page"><a class="skip" href="#main">Skip to documentation</a><header class="header">
+ <div class="nav-wrap">
+  <a class="brand" href="../../#top" aria-label="Fort home"><img src="../../assets/fort.svg" width="34" height="34" alt=""><span>Fort</span></a>
+  <nav class="nav" aria-label="Main navigation"><a href="../../#platform">Platform</a><a href="../../#governance">How it works</a><a href="../../#evidence">Governance</a><a href="../" aria-current="page">Docs</a></nav>
+  <a class="button small" href="../../#access">Request access <span aria-hidden="true">↗</span></a>
+  <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation"><span></span><span></span></button>
+ </div>
+ <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="../../#platform">Platform</a><a href="../../#governance">How it works</a><a href="../../#evidence">Governance</a><a href="../" aria-current="page">Docs</a><a href="../../#access">Request access</a></nav>
+</header>
+<div class="docs-layout"><aside class="docs-sidebar"><details class="docs-navigation" open><summary>Documentation navigation</summary><a class="docs-home" href="../">Documentation home</a><nav aria-label="Documentation"><p class="sidebar-label">Understand Fort</p><a href="../understand/">Overview</a><a href="../understand/#pillars">Identity, control & evidence</a><a href="../understand/#sandbox">Sandboxes & Warden</a><p class="sidebar-label">Deploy Fort</p><a href="../deploy/">Choose your deployment</a><a href="../aws/">Deploy on AWS</a><a href="../gcp/">Deploy on Google Cloud</a><p class="sidebar-label">Agents & tools</p><a href="../tools/" aria-current="page">Connect agents & tool servers</a><a href="../operations/#agents">Agent commands</a><p class="sidebar-label">Policy & approvals</p><a href="../policy/#policies">Policy as code</a><a href="../policy/#approvals">Human approvals</a><p class="sidebar-label">Operations & reference</p><a href="../operations/#evidence">Audit & governance</a><a href="../operations/#roadmap">Roadmap</a></nav><div class="sidebar-note"><span class="status-dot"></span> Early access<p>Use the qualified build and templates supplied to your team.</p></div></details></aside><main id="main" class="docs-article"><nav class="page-contents" aria-label="On this page"><span>On this page</span><a href="#overview">Overview</a><a href="#separation">The separation</a><a href="#migrate">Move embedded tools</a><a href="#prepare">Prepare images &amp; backend</a><a href="#credentials">Project &amp; credentials</a><a href="#declare">Declare the tool server</a><a href="#client">Configure the agent</a><a href="#verify">Apply &amp; verify</a></nav><section id="overview" class="doc-intro"><p class="eyebrow">Customer onboarding · Agents and tools</p><h1>Give your agents tools.<br><em>Keep the boundary intact.</em></h1><p class="doc-lede">Separate containers. One Fort VM. A governed route to your backend.</p>
+<p>Installing Fort gives you the runtime and operator console. To do useful work, an agent also needs a reachable model provider when it uses an LLM, and tool servers that expose the operations you want Warden to govern. An agent image alone does not package or deploy those external services.</p>
+</section><section id="separation"><h2>The deployment shape.</h2>
+<div class="compiler-flow" role="img" aria-label="Agent sandbox to Warden and relay to separate tool container to customer backend"><span>Agent sandbox</span> → <span>Warden + relay</span> → <span>Tool container</span> → <span>Customer backend</span></div><p class="code-note">The agent, Warden, relay and tool container run in the same Fort VM. The backend can run elsewhere.</p>
+<p>Fort already runs declared tool-server images as separate Docker containers on the same VM, outside every agent sandbox. You supply the images and declarations; <code>fort apply</code> starts and maintains them. This managed path needs one Fort VM. Your backend systems may live on other servers or networks that the tool container can reach through approved routing.</p>
+<p>The agent decides which tool to call. The tool server makes the backend request and holds the backend credential. The agent calls through Warden and the relay; keep backend credentials and direct backend access outside its sandbox. Declaring <code>tool_access</code> authorizes and configures access to a service; the agent&#x27;s application must still implement an MCP client and use that service.</p>
+</section><section id="migrate"><h2>If the tools currently live inside your agent.</h2>
+<p>Move the functions that touch the backend, and the SDKs and credentials they need, into a separate MCP server image. Replace the agent&#x27;s local function calls with MCP calls to that server. Keep reasoning, planning and model calls in the agent image. For example, the tool server can hold a Kubernetes token and expose a narrow <code>get_status</code> operation, while the agent receives the result through the relay.</p>
+<p>Fort does not extract Python functions, wrap a stdio server or build images from your agent automatically. In v0, the hosted MCP transport is <strong>Streamable HTTP</strong>. Package an HTTP adapter in the image when starting with a stdio-only tool server.</p>
+</section><section id="prepare"><h2>Prepare the two images and the backend.</h2>
+<p>Before applying, have all of these ready:</p>
+<ul><li>An agent image with the correct command, executable paths, user and writable paths. Its MCP client must read the injected tool URL described below.</li><li>A tool-server image pinned by digest, listening on its container interface at the declared port/path. Run it as a non-root user. Implement its declared tools and a health endpoint if you configure one.</li><li>For MCP requests, the tool server must check the <code>x-fort-relay-token</code> header against the injected <code>FORT_RELAY_TOKEN</code>. Let Fort provide that value; do not hardcode or log it.</li><li>Backend DNS, routes, TLS trust and a least-privilege backend identity. A policy declaration does not create VPC peering, backend accounts or database permissions.</li><li>Images that Fort/OpenShell can pull. For a private tool image, store registry credentials as a tool secret of kind <code>registry</code> and reference it with <code>registry_auth</code>. Agent-image registry access must also be configured for its runtime.</li></ul>
+<p>The cloud template&#x27;s bootstrap secret contains installation TLS and sign-in material. Backend tool credentials go into <strong>Fort&#x27;s tool secret store</strong> after the project exists. Model credentials are registered separately as providers and stay outside the agent. Do not put these values in Terraform variables, policy YAML or agent env.</p>
+</section><section id="credentials"><h2>Create the project and register credentials.</h2>
+<p>Run this walkthrough as the user who received the installer&#x27;s <code>local</code> context. For a manual <code>sudo fort up</code>, that is the invoking operator: continue as that user. The customer Terraform bootstrap runs as root, so for that specific path open root&#x27;s login shell with <code>sudo -i</code> before the commands below. Do not switch users for a manual installation whose credentials were saved in the operator&#x27;s home.</p><p>Enable the cloud template&#x27;s SSH option only for your approved source network when using this CLI path. On an established installation, substitute your authorized operator context for <code>--context local</code>. Keep the API private and use approved local or tunneled access; browser sign-in does not configure a remote CLI connection. The initial bootstrap token expires, so use the installation guide&#x27;s recovery procedure when needed and provision normal operator access for ongoing work.</p>
+<p>Plain <code>fort init</code> creates a policy repo containing project <code>default</code>. Create that project on the server before registering its providers and tool secrets:</p>
+<figure class="docs-code"><figcaption><span>CLI setup</span><span>bash</span></figcaption><pre tabindex="0"><code>fort --context local init ./fort-policy
+fort --context local project create default --wait
+fort --context local --project default provider add anthropic --api-key-file /protected/anthropic.key
+fort --context local tool secret set default/ops-backend --from-file /protected/ops-backend.token</code></pre></figure>
+<p>Select your actual CLI context, provider and protected credential files. The provider line is an Anthropic example; register only the providers your agent declares. An agent that does not use a model does not need that provider. Skip the tool-secret line for a server that needs no backend credential. Secret values are file contents, never literal command arguments. Keep the complete desired policy repo, including other projects already managed by this Fort installation.</p>
+</section><section id="declare"><h2>Declare the tool server.</h2>
+<p>Create <code>fort-policy/projects/default/tool-servers/ops.yaml</code>. This is a template: replace the image/digest, backend, environment names and tool names with your actual server before validating or applying. The server must implement <code>get_status</code> and <code>/healthz</code> if you keep those declarations.</p>
+<figure class="docs-code"><figcaption><span>Template · replace customer values</span><span>yaml</span></figcaption><pre tabindex="0"><code>kind: ToolServer
+name: ops
+image: REGISTRY/TEAM/ops-tools@sha256:REPLACE_WITH_REAL_IMAGE_DIGEST
+listen: { port: 8080, path: /mcp }
+transport: streamable-http
+run_as: &quot;10001:10001&quot;
+env:
+  BACKEND_URL: https://api.internal.example.com
+credentials:
+  - { secret: ops-backend, env: BACKEND_TOKEN }
+backends:
+  - { host: api.internal.example.com, ports: [443] }
+resources: { cpus: 0.5, memory_mb: 256, pids: 128 }
+health: { path: /healthz }
+tools:
+  - { name: get_status }</code></pre></figure>
+<p>List the actual backend hostnames and IP/CIDR routes the service uses. Fort uses this set to reject agent egress that would bypass the governed tool path. In v0, these backend declarations <strong>do not restrict the tool container&#x27;s outbound destinations</strong>; tool containers have outbound access except to the VM and cloud metadata. Treat tool images as trusted code, scope their backend credentials narrowly, and do not rely on VM metadata credentials from inside them.</p>
+<p>Fort injects the declared backend secret only into the tool container. It also pulls the pinned image, creates the container on its tools network, provides its relay token, checks health, and handles restarts and replacements. Leave its port private; agents use the relay rather than a public container port.</p>
+</section><section id="client"><h2>Give the agent access and configure its client.</h2>
+<p>Add this fragment to your complete agent declaration in <code>fort-policy/projects/default/agents/&lt;agent&gt;.yaml</code>:</p>
+<figure class="docs-code"><figcaption><span>Template · replace customer values</span><span>yaml</span></figcaption><pre tabindex="0"><code>tool_access:
+  - server: ops
+    rules:
+      - id: status-read
+        tools: [get_status]
+        outcome: allow</code></pre></figure>
+<p>Declare the rest of the agent too: its pinned image, command, network-capable executables, resources, providers and egress. Unlisted tool calls remain denied. Use <code>ask</code> rules for actions needing approval and <code>deny</code> for prohibited actions; keep the existing human step-up and self-approval protections.</p>
+<p>For a granted server named <code>ops</code>, Fort injects <code>FORT_TOOL_OPS_URL</code> into the sandbox. Read it and pass it to your framework&#x27;s <strong>Streamable HTTP MCP client</strong>. A server called <code>my-tools</code> produces <code>FORT_TOOL_MY_TOOLS_URL</code>. Do not set the reserved <code>FORT_*</code> variables in policy yourself or hardcode a container IP.</p>
+<figure class="docs-code"><figcaption><span>Agent integration</span><span>python</span></figcaption><pre tabindex="0"><code>import os
+mcp_url = os.environ[&quot;FORT_TOOL_OPS_URL&quot;]
+# Configure your agent framework&#x27;s Streamable HTTP MCP client with mcp_url.</code></pre></figure>
+<p>The client must initialize the MCP connection, discover permitted tools and issue <code>tools/call</code>. Handle an <code>ask</code> as a pending human approval, then retry the same call when approved. Do not add backend network access to work around a denied tool call. Use the returned reason code to distinguish policy denial, pending approval and a tool-service failure. Ask your Fort contact for the complete integration reference.</p>
+</section><section id="verify"><h2>Apply and prove the complete path.</h2>
+<p>After all placeholders are replaced and credentials are registered:</p>
+<figure class="docs-code"><figcaption><span>CLI setup</span><span>bash</span></figcaption><pre tabindex="0"><code>fort --context local policy validate ./fort-policy --server
+fort --context local apply ./fort-policy --dry-run
+fort --context local apply ./fort-policy --wait
+fort --context local tool get default/ops
+fort --context local agent list</code></pre></figure>
+<p><code>--server</code> adds the installed server&#x27;s provider/secret checks to local validation. A successful apply or a running sandbox alone does not prove a backend operation works. Finish these checks before handing the environment to a customer:</p>
+<ol><li>The tool server reports <code>Healthy</code>. Check the Tools page in the console too.</li><li>The agent reaches its intended running state and reads its injected tool URL.</li><li>From the agent, initialize MCP, list the permitted tools and make one allowed, read-only call. Confirm the backend returned the expected result.</li><li>Check the corresponding decision in the ledger. A prohibited call must be denied; an <code>ask</code> must wait for a different authorized human&#x27;s approval and step-up.</li></ol>
+<p>If the agent is pending, inspect tool health first. If a sandboxed agent cannot use its tools, check the MCP client URL, tool name and policy rather than opening direct backend access. Useful operator checks:</p>
+<figure class="docs-code"><figcaption><span>CLI setup</span><span>bash</span></figcaption><pre tabindex="0"><code>fort --context local tool get default/ops
+fort --context local tool logs default/ops --since 10m
+fort --context local agent get default/YOUR_AGENT</code></pre></figure>
+<p>Logs require a container to exist. For a pull/start/health failure, check the digest, registry access, non-root user, listen interface, health path and backend routing. A healthy server with failing calls often needs its backend credentials, TLS trust or permissions corrected. Keep credentials and tool arguments out of diagnostic logs.</p>
+<p>The SRE/payments demos and their published images are not a prerequisite for this flow. Example images containing placeholder digests are not deployable release images. Use the complete tool-server and policy references supplied with your Fort checkout for all supported fields.</p>
+</section></main></div><footer class="docs-footer"><a class="brand" href="../../"><img src="../../assets/fort.svg" width="27" height="27" alt=""><span>Fort</span></a><p>Hold the fort.</p><a href="../../#access">Request early access ↗</a></footer></body></html>

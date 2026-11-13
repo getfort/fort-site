@@ -9,7 +9,11 @@ hosted on Cloudflare Workers Static Assets at https://getfort.io.
 - `warden.js` / `warden.css`: the interactive sandbox, agent and Warden example.
 - `arrivals.js`: the hero agent enters the fort and remains inside.
 - `additions.css`: problem statement, human oversight and audit sections.
-- `docs/index.html`, `docs/docs.css`, `docs/docs.js`: public documentation at `/docs/`; Markdown files in that directory are internal and excluded from publication.
+- `docs/index.html`: task-oriented documentation home at `/docs/`.
+- `docs/understand/`, `docs/deploy/`, `docs/policy/`, `docs/operations/`: focused concepts, deployment choices, policy/approvals and operations reference. Original `/docs/#section` links route to these pages with linked fallbacks.
+- `docs/docs.css`, `docs/docs.js`: shared responsive documentation navigation, local contents and presentation. Markdown files remain internal and excluded from publication.
+- `docs/tools/index.html`: practical agent/tool-server separation, managed-container deployment, client setup and first-call verification.
+- `docs/aws/index.html`, `docs/gcp/index.html`: Terraform deployment guides for early-access customer installations; keep examples aligned with Fort’s customer modules.
 - `assets/`: the existing Fort logo and favicon.
 - `404.html`: matching not-found page.
 - `build.sh`: assembles the published `dist/` and adds content hashes to CSS and JavaScript.
