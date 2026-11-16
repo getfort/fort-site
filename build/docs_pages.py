@@ -1,8 +1,9 @@
 """Assemble full docs pages: shared chrome (docs-page.html) + sidebar + Markdown body."""
 import html
+import re
 from pathlib import Path
 
-from site_markdown import MarkdownError, front_matter, inline, link_item, render
+from site_markdown import MarkdownError, check_safe, front_matter, inline, link_item, render
 
 TEMPLATE = (Path(__file__).with_name('docs-page.html')).read_text()
 SITE = 'https://getfort.io/docs/'
@@ -75,13 +76,13 @@ def page(source, page_path, sidebar_source):
     if meta.get('contents'):
         links = ''.join(f'<a href="{attr(h)}">{inline(t)}</a>' for t, h in map(link_item, meta['contents']))
         main = f'<nav class="page-contents" aria-label="On this page"><span>On this page</span>{links}</nav>\n{main}'
+    side = sidebar(sidebar_source, docs, page_path)
+    check_safe(main + side + inline(meta['skip']))
     values = {
         'canonical': attr(canonical), 'og': og, 'description': attr(meta['description']),
         'title': html.escape(meta['title'], quote=False), 'skip': inline(meta['skip']),
         'root': root, 'docs': docs, 'docs_link': docs or './',
-        'sidebar': sidebar(sidebar_source, docs, page_path), 'main': main,
+        'sidebar': side, 'main': main,
     }
-    out = TEMPLATE
-    for key, value in values.items():
-        out = out.replace('{{' + key + '}}', value)
-    return out
+    # One pass, so text in a page can never be read as a placeholder.
+    return re.sub(r'\{\{(\w+)\}\}', lambda m: values[m.group(1)], TEMPLATE)

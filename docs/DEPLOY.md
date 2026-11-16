@@ -28,26 +28,37 @@ Runs queue one at a time. Each deploy's message names both commits, so
 `npx wrangler deployments list --name fort-web` shows what is live.
 
 Every build lists its differences from the live site in the run summary ("Compare with
-live"). The deploy job then checks who deployed the live version (`build/live_guard.py`):
-if it was not this workflow (a manual deploy, a rollback, or the first deploy after the
-move from `web-pages`), it stops. Read the comparison, make sure nothing live is missing
-from git, and run the workflow on `main` with `live_version_reviewed` set to the version
-id the job printed.
+live"). The deploy job then checks who deployed the live version (`build/live_guard.py`).
+If it was not this workflow (a manual deploy, a rollback, or the first deploy after the
+move from `web-pages`), it stops. An admin then reads the comparison, makes sure nothing
+live is missing from git, sets the version id the job printed as the `production`
+environment variable `LIVE_VERSION_REVIEWED`, and reruns the workflow. Only admins can set
+environment variables; the dispatch token cannot.
 
-### Secrets
+Wrangler comes from `package-lock.json` (`npm ci --ignore-scripts`), installed before the
+Cloudflare token is in any step's environment.
 
-Set by the owner in this repo's settings (Settings → Secrets and variables → Actions):
+## Owner setup
 
-| Secret | What it is |
-|---|---|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token from the "Edit Cloudflare Workers" template, limited to the account above and the `getfort.io` zone. |
-| `FORT_READ_TOKEN` | GitHub fine-grained token, resource owner `spawningpool`, repository `spawningpool/fort` only, permission **Contents: Read-only**. |
+Done once by the owner in GitHub and Cloudflare. No agent creates, sees or handles a token.
 
-Only the deploy job sees `CLOUDFLARE_API_TOKEN`. It is also the deploy switch: without
-it, runs on `main` build and check, and deploy nothing.
-
-Fort's repo holds `FORT_SITE_DISPATCH_TOKEN`: a fine-grained token for
-`spawningpool/fort-site` only, permission **Actions: Read and write**, with an expiry.
+1. **Branch protection on `main`** (Settings → Branches): require a pull request and the
+   `site / build` check, and block force pushes and deletion.
+2. **`production` environment** (Settings → Environments → New environment):
+   - Deployment branches and tags: **Selected branches**, `main` only.
+   - Environment secret `CLOUDFLARE_API_TOKEN`: a Cloudflare custom token with
+     Account → **Workers Scripts: Edit** (account `7be48c17ff1b7cfb0a4b65cae4cb8ad3`) and
+     Zone → **Workers Routes: Edit** and **DNS: Edit**, for the zone `getfort.io` only.
+     Adding it turns deploys on: without it, runs on `main` build, check and deploy nothing.
+   - Optional: **Required reviewers** set to yourself. Every deploy then waits for your
+     click, including docs changes from Fort `main`.
+   - For the first deploy only: environment variable `LIVE_VERSION_REVIEWED`, set to the
+     version id the deploy job printed, once the comparison has been checked.
+3. **Repository secret `FORT_READ_TOKEN`** (Settings → Secrets and variables → Actions): a
+   GitHub fine-grained token, resource owner `spawningpool`, repository `spawningpool/fort`
+   only, **Contents: Read-only**, with an expiry.
+4. **In the Fort repo, repository secret `FORT_SITE_DISPATCH_TOKEN`:** a fine-grained token,
+   repository `spawningpool/fort-site` only, **Actions: Read and write**, with an expiry.
 
 ## Domains
 

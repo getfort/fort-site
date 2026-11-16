@@ -5,6 +5,7 @@ stops the build instead of publishing a broken page. See docs/MARKDOWN.md.
 """
 import html
 import re
+from html.parser import HTMLParser
 
 
 class MarkdownError(Exception):
@@ -230,3 +231,42 @@ def link_item(item):
     if not match:
         raise MarkdownError(f'expected a [label](link) item: {item}')
     return match.group(1), match.group(2)
+
+
+UNSAFE_TAGS = {'script', 'iframe', 'object', 'embed', 'form', 'style', 'link', 'meta', 'base',
+               'frame', 'frameset', 'svg', 'math', 'input', 'button', 'textarea', 'select'}
+URL_ATTRS = {'href', 'src', 'action', 'formaction', 'xlink:href', 'srcset', 'poster', 'data', 'srcdoc'}
+SAFE_SCHEMES = {'http', 'https'}
+
+
+class _SafetyCheck(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.problems = []
+
+    def handle_starttag(self, tag, attributes):
+        if tag in UNSAFE_TAGS:
+            self.problems.append(f'<{tag}> is not allowed')
+        for name, value in attributes:
+            if name.startswith('on'):
+                self.problems.append(f'<{tag} {name}=...>: event attributes are not allowed')
+            elif name in URL_ATTRS:
+                plain = re.sub(r'[\x00-\x20]', '', value or '')
+                scheme = re.match(r'([a-zA-Z][a-zA-Z0-9+.-]*):', plain)
+                if name == 'srcdoc' or (scheme and scheme.group(1).lower() not in SAFE_SCHEMES):
+                    self.problems.append(f'<{tag} {name}="{value}">: only http(s), relative and # links')
+
+    handle_startendtag = handle_starttag
+
+
+def check_safe(rendered):
+    """Refuse active content in HTML rendered from docs Markdown.
+
+    The docs are written in the Fort repo, so a docs change must not be able to
+    put script, frames, forms, event handlers or javascript: links on the site.
+    """
+    checker = _SafetyCheck()
+    checker.feed(rendered)
+    checker.close()
+    if checker.problems:
+        raise MarkdownError('; '.join(dict.fromkeys(checker.problems)))

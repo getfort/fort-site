@@ -54,3 +54,9 @@ Write `&`, `<` and quotes as plain characters; they are escaped for you. A backs
 escapes `` \` \* \[ \] \{ \} \< \& \\ ``.
 
 Links are written as they appear on the published page, relative to it.
+
+## Not allowed
+
+The build stops on `<script>`, `<iframe>`, `<object>`, `<embed>`, `<form>` and other active
+or form elements, `<style>`, `<link>`, `<meta>` and `<base>`, any `on...` event attribute, and
+any link whose scheme is not `http` or `https` (relative links and `#` anchors are fine).

@@ -9,8 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from docs_pages import page  # noqa: E402
 from html_compare import compare  # noqa: E402
+from live_guard import decide  # noqa: E402
 from package_terraform import PackageError, contents, shipped, write  # noqa: E402
-from site_markdown import MarkdownError, inline, render  # noqa: E402
+from site_markdown import MarkdownError, check_safe, inline, render  # noqa: E402
 
 SIDEBAR = '''---
 summary: Documentation navigation
@@ -57,6 +58,30 @@ class Markdown(unittest.TestCase):
                 render(bad)
 
 
+class Safety(unittest.TestCase):
+    def test_refuses_active_content(self):
+        for bad in ('<script>x</script>', '<iframe src="https://x"></iframe>', '<form></form>',
+                    '<a href="javascript:alert(1)">x</a>', '<a href="java&#x09;script:x">x</a>',
+                    '<a href=" JavaScript:x">x</a>', '<img src="data:image/png;base64,AA">',
+                    '<span onclick="x">x</span>', '<base href="https://evil">', '<style>x</style>'):
+            with self.assertRaises(MarkdownError, msg=bad):
+                check_safe(render(bad))
+        for bad in ('[x](javascript:alert)', '[x](#a){onclick="x"}', 'text <svg onload=x>'):
+            with self.assertRaises(MarkdownError, msg=bad):
+                check_safe(render(bad))
+
+    def test_allows_normal_links(self):
+        check_safe(render('[a](https://x.io/) [b](../gcp/#x) [c](#y) [d](reference/){.button download}'))
+
+    def test_page_runs_the_check(self):
+        with self.assertRaises(MarkdownError):
+            page('---\ntitle: T\ndescription: D\nskip: S\n---\n<script>x</script>\n', '', SIDEBAR)
+
+    def test_page_text_is_not_a_placeholder(self):
+        out = page('---\ntitle: T\ndescription: D\nskip: S\n---\nLiteral {{sidebar}}\n', '', SIDEBAR)
+        self.assertIn('Literal {{sidebar}}', out)
+
+
 class Pages(unittest.TestCase):
     def render(self, path, body='Text'):
         return page(f'---\ntitle: T & U\ndescription: D\nskip: Skip\n---\n{body}\n', path, SIDEBAR)
@@ -92,6 +117,30 @@ class Compare(unittest.TestCase):
         self.assertIsNotNone(compare('<p>A B</p>', '<p>A C</p>'))
         self.assertIsNotNone(compare('<p><b>a</b> <i>b</i></p>', '<p><b>a</b><i>b</i></p>'))
         self.assertIsNotNone(compare('<pre>a\n b</pre>', '<pre>a\nb</pre>'))
+
+
+def deployment(version, when, message=None):
+    annotations = {'workers/message': message} if message is not None else {}
+    return {'versions': [{'version_id': version}], 'created_on': when, 'annotations': annotations}
+
+
+class LiveGuard(unittest.TestCase):
+    def test_deploys_over_a_fort_site_deploy(self):
+        listed = [deployment('old', '1', None), deployment('new', '2', 'fort-site abc + fort def')]
+        self.assertTrue(decide(listed, '')[0])
+
+    def test_stops_on_a_manual_deploy_or_rollback(self):
+        listed = [deployment('a', '1', 'fort-site abc + fort def'), deployment('b', '2', None)]
+        ok, why = decide(listed, '')
+        self.assertFalse(ok)
+        self.assertIn('LIVE_VERSION_REVIEWED=b', why)
+        self.assertFalse(decide(listed, 'a')[0])
+
+    def test_deploys_once_that_live_version_was_reviewed(self):
+        self.assertTrue(decide([deployment('b', '2', 'manual')], 'b')[0])
+
+    def test_stops_when_nothing_is_listed(self):
+        self.assertFalse(decide([], 'b')[0])
 
 
 class FakeFort:
@@ -144,6 +193,13 @@ class Package(unittest.TestCase):
                 contents(self.fort(**{BASE + path: ('100644', b'x')}))
         with self.assertRaises(PackageError):
             contents(self.fort(**{BASE + 'gcp/big.tf': ('100644', b'x' * (1024 * 1024 + 1))}))
+
+    def test_refuses_any_case_unsafe_names_and_clashes(self):
+        for path in ('gcp/PROD.TFVARS', 'shared/TLS.KEY', 'gcp/Terraform.TFSTATE', 'gcp/../x.tf',
+                     'gcp\\x.tf', 'LICENSE', 'START_HERE.txt', 'source_manifest.sha256'):
+            with self.assertRaises(PackageError, msg=path):
+                contents(self.fort(**{BASE + path: ('100644', b'x')}))
+        self.assertIn('gcp/LICENSE', contents(self.fort(**{BASE + 'gcp/LICENSE': ('100644', b'x')})))
 
     def test_keeps_examples_and_lock_files(self):
         names = contents(self.fort(**{BASE + 'gcp/terraform.tfvars.example': ('100644', b'x'),

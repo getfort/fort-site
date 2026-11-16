@@ -24,7 +24,8 @@ The live site is always Fort `main` plus this repo's `main`. A push to either de
   - `build.py`: assembles `dist/`, the only directory that is published.
   - `docs-page.html`: the shared docs page frame (header, sidebar slot, footer).
   - `site_markdown.py`, `docs_pages.py`: render Fort's docs Markdown into that frame.
-    The Markdown syntax is described in `docs/MARKDOWN.md`.
+    The Markdown syntax is described in `docs/MARKDOWN.md`. The build refuses scripts,
+    frames, forms, event attributes and non-http(s) links in docs pages.
   - `package_terraform.py`: packs the Terraform ZIP. Every tracked file under
     `deploy/terraform/customer/` goes in, except Fort's own `tests/` and `.gitignore`.
     The build stops on executables, symlinks, files over 1 MB, and any tracked tfvars,
@@ -36,7 +37,8 @@ The live site is always Fort `main` plus this repo's `main`. A push to either de
     deploy when the live version was not deployed by this workflow.
   - `tests/`: unit tests (`python3 -m unittest discover -s build/tests`).
 - `.github/workflows/site.yml`: build on every PR, build and deploy on `main`.
-- `wrangler.jsonc`: the Worker and its domains.
+- `wrangler.jsonc`: the Worker and its domains. `package.json` and `package-lock.json` pin
+  wrangler, the deploy tool; the site itself has no npm dependencies.
 - `PRODUCT.md`: who the site is for and what it says.
 
 Early-access buttons lead to the Fort Typeform (`twrlRIKM`).

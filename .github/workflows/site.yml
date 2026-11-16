@@ -7,9 +7,10 @@ name: site
 #   main that changes docs/site/** or deploy/terraform/customer/**. The build still
 #   uses Fort's current main, which must contain the commit that asked, so an older
 #   Fort commit can never replace a newer one.
-# Only the deploy job holds the Cloudflare token. It deploys only if the live site was
-# last deployed by this workflow, or a person compared the build with the live version
-# and named it in live_version_reviewed (build/live_guard.py).
+# Only the deploy job holds the Cloudflare token, as a secret of the `production`
+# environment, which only main may use. It deploys only if the live site was last
+# deployed by this workflow, or an admin compared the build with the live version and set
+# that version id as the environment variable LIVE_VERSION_REVIEWED (build/live_guard.py).
 on:
   push:
     branches: [main]
@@ -20,17 +21,15 @@ on:
         description: Fort commit that asked for this build (Fort main must contain it)
         required: false
         default: ""
-      live_version_reviewed:
-        description: Live Cloudflare version id you compared with this build (only when the deploy asks for it)
-        required: false
-        default: ""
 
 permissions:
   contents: read
 
+# Runs on main queue one at a time and never cancel each other; other refs get their own
+# group, so they can never cancel a pending main deploy.
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('site-pr-{0}', github.ref) || 'fort-web-deploy' }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && 'fort-web-deploy' || format('site-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' || github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -108,13 +107,14 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    environment: production
     env:
       # The deploy switch: until the owner adds the token, runs on main deploy nothing.
       HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
       - name: Deploys are off
         if: env.HAS_TOKEN != 'true'
-        run: echo "::notice::Not deployed, because CLOUDFLARE_API_TOKEN is not set in this repo."
+        run: echo "::notice::Not deployed, because CLOUDFLARE_API_TOKEN is not set in the production environment."
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: env.HAS_TOKEN == 'true'
@@ -132,12 +132,18 @@ jobs:
         with:
           node-version: "22"
 
+      # Installed from package-lock.json, without install scripts and before the token is in
+      # any step's environment.
+      - name: Install wrangler
+        if: env.HAS_TOKEN == 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Live site was deployed by fort-site, or was reviewed
         if: env.HAS_TOKEN == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          LIVE_VERSION_REVIEWED: ${{ inputs.live_version_reviewed }}
-        run: npx --yes wrangler@4.162.0 deployments list --name fort-web --json | python3 build/live_guard.py
+          LIVE_VERSION_REVIEWED: ${{ vars.LIVE_VERSION_REVIEWED }}
+        run: ./node_modules/.bin/wrangler deployments list --name fort-web --json | python3 build/live_guard.py
 
       - name: Deploy
         if: env.HAS_TOKEN == 'true'
@@ -145,7 +151,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FORT_BUILT: ${{ needs.build.outputs.fort_sha }}
         run: >-
-          npx --yes wrangler@4.162.0 deploy
+          ./node_modules/.bin/wrangler deploy
           --message "fort-site ${GITHUB_SHA::12} + fort ${FORT_BUILT::12}"
 
       - name: Live site serves this build

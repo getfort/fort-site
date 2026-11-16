@@ -13,6 +13,8 @@ BASE = 'deploy/terraform/customer/'
 NAME = 'fort-terraform-customer'
 HERE = Path(__file__).parent
 MAX_BYTES = 1024 * 1024
+# Files the packer adds itself; Fort may not track a file of the same name at the top.
+ADDED = {'license', 'start_here.txt', 'source_manifest.sha256'}
 
 
 class PackageError(Exception):
@@ -25,8 +27,12 @@ def forbidden(rel):
     Applies to every tracked file under BASE, shipped or not: real variables,
     Terraform state, provider caches and keys stop the build.
     """
-    parts = rel.split('/')
+    if '\\' in rel or rel.startswith('/') or '..' in rel.split('/') or '' in rel.split('/'):
+        return 'an unsafe path'
+    parts = rel.lower().split('/')
     name = parts[-1]
+    if len(parts) == 1 and name in ADDED:
+        return f'a file named like the packaging addition {name}'
     if name.endswith('.tfvars') or ('.tfvars.' in name and not name.endswith('.tfvars.example')):
         return 'a tfvars file (only *.tfvars.example may be tracked)'
     if '.tfstate' in name:

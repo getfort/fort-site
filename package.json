@@ -1,0 +1,8 @@
+{
+  "name": "fort-site",
+  "private": true,
+  "description": "Deploy tooling for getfort.io; the site itself has no npm dependencies.",
+  "devDependencies": {
+    "wrangler": "4.156.1"
+  }
+}
