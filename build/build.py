@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 from docs_pages import page
-from fort_source import FortCommit, FortSourceError
+from fort_source import FortCommit, FortSourceError, FortTree
 from package_terraform import PackageError, write as write_package
 from site_markdown import MarkdownError
 
@@ -40,6 +40,8 @@ def docs_pages(fort):
     pages, sidebar = {}, None
     for mode, path in fort.files(DOCS):
         rel = path[len(DOCS):]
+        if rel.startswith('_build/'):  # Fort's build entry (build.sh, pin, Worker config)
+            continue
         if mode != '100644':
             raise BuildError(f'{path}: mode {mode} is not a regular file')
         if rel == '_sidebar.md':
@@ -65,11 +67,11 @@ def stamp(dist):
             html_file.write_text(text.replace(f'{name}"', f'{name}?v={version}"'))
 
 
-def build(fort_repo, ref, out):
+def build(fort_repo, ref, out, tree_sha=None):
     index = (SITE / 'index.html').read_text()
     if 'href="EARLY_ACCESS_URL"' in index:
         raise BuildError('index.html still has the EARLY_ACCESS_URL placeholder')
-    fort = FortCommit(fort_repo, ref)
+    fort = FortTree(fort_repo, tree_sha) if tree_sha else FortCommit(fort_repo, ref)
     if out.exists():
         shutil.rmtree(out)
     for name in STATIC:
@@ -90,15 +92,12 @@ def build(fort_repo, ref, out):
     stamp(out)
     # Workers Static Assets reads _headers and does not publish it.
     (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n')
-    # /build.json names what this build is. Fort's site-dispatch reads fort_sha to tell
-    # whether main has docs or Terraform changes the live site lacks. dist_sha256 covers
-    # every published path and its content (so a removed page counts) and wrangler_sha256
-    # the Worker config: the deploy is skipped only when live build.json is identical.
+    # /build.json names what is live: the Fort and fort-site commits, and a digest of every
+    # published path and its content.
     record = {
         'dist_sha256': dist_digest(out),
         'fort_sha': fort.sha,
         'fort_site_sha': site_sha(),
-        'wrangler_sha256': hashlib.sha256((SITE / 'wrangler.jsonc').read_bytes()).hexdigest(),
     }
     (out / 'build.json').write_text(json.dumps(record, sort_keys=True) + '\n')
     return fort.sha, sorted(pages), checksum, entries
@@ -124,10 +123,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     parser.add_argument('--fort', required=True, help='path to a Fort git checkout')
     parser.add_argument('--ref', default='HEAD', help='Fort commit to build from (default HEAD)')
+    parser.add_argument('--tree-sha', help='read the checked-out files instead of git; only for a '
+                        'fresh build-service clone without .git, whose commit this names')
     parser.add_argument('--out', default=str(SITE / 'dist'), help='output directory (default dist/)')
     args = parser.parse_args()
     try:
-        sha, pages, checksum, entries = build(args.fort, args.ref, Path(args.out))
+        sha, pages, checksum, entries = build(args.fort, args.ref, Path(args.out), args.tree_sha)
     except (BuildError, FortSourceError, PackageError) as err:
         sys.exit(f'build failed: {err}')
     print(f'Fort commit: {sha}')

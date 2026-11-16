@@ -1,5 +1,6 @@
 """Tests for the docs renderer and the Terraform packer."""
 import io
+import json
 import sys
 import unittest
 import zipfile
@@ -9,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from docs_pages import page  # noqa: E402
 from html_compare import compare  # noqa: E402
-from live_guard import decide  # noqa: E402
 import verify_live  # noqa: E402
 from package_terraform import PackageError, contents, shipped, write  # noqa: E402
 from site_markdown import MarkdownError, check_safe, inline, render  # noqa: E402
@@ -124,30 +124,6 @@ class Compare(unittest.TestCase):
         self.assertIsNotNone(compare('<pre>a\n b</pre>', '<pre>a\nb</pre>'))
 
 
-def deployment(version, when, message=None):
-    annotations = {'workers/message': message} if message is not None else {}
-    return {'versions': [{'version_id': version}], 'created_on': when, 'annotations': annotations}
-
-
-class LiveGuard(unittest.TestCase):
-    def test_deploys_over_a_fort_site_deploy(self):
-        listed = [deployment('old', '1', None), deployment('new', '2', 'fort-site abc + fort def')]
-        self.assertTrue(decide(listed, '')[0])
-
-    def test_stops_on_a_manual_deploy_or_rollback(self):
-        listed = [deployment('a', '1', 'fort-site abc + fort def'), deployment('b', '2', None)]
-        ok, why = decide(listed, '')
-        self.assertFalse(ok)
-        self.assertIn('LIVE_VERSION_REVIEWED=b', why)
-        self.assertFalse(decide(listed, 'a')[0])
-
-    def test_deploys_once_that_live_version_was_reviewed(self):
-        self.assertTrue(decide([deployment('b', '2', 'manual')], 'b')[0])
-
-    def test_stops_when_nothing_is_listed(self):
-        self.assertFalse(decide([], 'b')[0])
-
-
 class Unreachable(unittest.TestCase):
     def setUp(self):
         import tempfile
@@ -159,7 +135,7 @@ class Unreachable(unittest.TestCase):
     def tearDown(self):
         verify_live.urllib.request.urlopen = self.real
 
-    def test_unreachable_site_is_an_answer_not_a_crash(self):
+    def test_unreachable_site_is_reported_not_a_crash(self):
         import urllib.error
         for err in (urllib.error.URLError('dns'), TimeoutError('slow'), ConnectionRefusedError()):
             def refuse(*args, error=err, **kwargs):
@@ -168,21 +144,6 @@ class Unreachable(unittest.TestCase):
             self.assertEqual(verify_live.fetch('https://getfort.io/'), (0, b''))
             problems = verify_live.mismatches(self.dist, 'https://getfort.io', explain=True)
             self.assertIn('https://getfort.io/build.json: HTTP 0, unreachable', problems)
-
-    def test_already_live_answers_no_when_unreachable(self):
-        def refuse(*args, **kwargs):
-            raise TimeoutError('slow')
-        verify_live.urllib.request.urlopen = refuse
-        out = io.StringIO()
-        argv = sys.argv
-        sys.argv = ['verify_live.py', '--already-live', str(self.dist)]
-        try:
-            from contextlib import redirect_stdout
-            with redirect_stdout(out):
-                verify_live.main()
-        finally:
-            sys.argv = argv
-        self.assertEqual(out.getvalue().strip(), 'already_live=no')
 
 
 class FakeFort:
@@ -257,6 +218,74 @@ class Package(unittest.TestCase):
             self.assertEqual(one, two)
             names = zipfile.ZipFile(io.BytesIO((Path(a) / 'fort-terraform-customer.zip').read_bytes())).namelist()
             self.assertTrue(all(n.startswith('fort-terraform-customer/') for n in names))
+
+
+class EndToEnd(unittest.TestCase):
+    """Build from a small Fort repository, from git and from its checked-out files."""
+
+    def setUp(self):
+        import subprocess
+        import tempfile
+        self.fort = Path(tempfile.mkdtemp())
+        files = {
+            'docs/site/_sidebar.md': SIDEBAR,
+            'docs/site/index.md': '---\ntitle: Docs\ndescription: D\nskip: Skip\n---\n# Hello\n',
+            'docs/site/gcp/index.md': '---\ntitle: GCP\ndescription: D\nskip: Skip\n---\n[Get](x.zip){.button download}\n',
+            'docs/site/README.md': 'not published',
+            'docs/site/_build/SITE_VERSION': 'a' * 40 + '\n',
+            'deploy/terraform/customer/README.md': 'readme',
+            'deploy/terraform/customer/gcp/main.tf': 'tf',
+            'deploy/terraform/customer/gcp/tests/launch.tftest.hcl': 'test',
+        }
+        for name, text in files.items():
+            (self.fort / name).parent.mkdir(parents=True, exist_ok=True)
+            (self.fort / name).write_text(text)
+        run = lambda *a: subprocess.run(['git', '-C', str(self.fort), *a], check=True, capture_output=True)
+        run('init', '-q')
+        run('add', '-A')
+        run('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '-m', 'fixture')
+        self.sha = subprocess.check_output(['git', '-C', str(self.fort), 'rev-parse', 'HEAD'], text=True).strip()
+
+    def built(self, **kwargs):
+        import tempfile
+        import build
+        out = Path(tempfile.mkdtemp()) / 'dist'
+        sha, pages, _, entries = build.build(str(self.fort), 'HEAD', out, **kwargs)
+        return out, sha, pages, entries
+
+    def test_git_build(self):
+        out, sha, pages, entries = self.built()
+        self.assertEqual(sha, self.sha)
+        self.assertEqual(pages, ['', 'gcp/'])
+        self.assertTrue((out / 'docs/gcp/index.html').exists())
+        self.assertFalse((out / 'docs/_build').exists())
+        self.assertNotIn('gcp/tests/launch.tftest.hcl', entries)
+        record = json.loads((out / 'build.json').read_text())
+        self.assertEqual(record['fort_sha'], self.sha)
+        self.assertEqual(sorted(record), ['dist_sha256', 'fort_sha', 'fort_site_sha'])
+        self.assertIn('no-cache', (out / '_headers').read_text())
+
+    def test_tree_build_matches_git_build(self):
+        import shutil
+        git_out = self.built()[0]
+        shutil.rmtree(self.fort / '.git')
+        tree_out = self.built(tree_sha=self.sha)[0]
+        for path in sorted(p for p in git_out.rglob('*') if p.is_file()):
+            rel = path.relative_to(git_out)
+            self.assertEqual(path.read_bytes(), (tree_out / rel).read_bytes(), str(rel))
+
+    def test_tree_build_refuses_executables_and_bad_shas(self):
+        import os
+        import shutil
+        from fort_source import FortSourceError
+        shutil.rmtree(self.fort / '.git')
+        with self.assertRaises(FortSourceError):
+            self.built(tree_sha='abc')
+        script = self.fort / 'deploy/terraform/customer/gcp/run.sh'
+        script.write_text('x')
+        os.chmod(script, 0o755)
+        with self.assertRaises(PackageError):
+            self.built(tree_sha=self.sha)
 
 
 if __name__ == '__main__':

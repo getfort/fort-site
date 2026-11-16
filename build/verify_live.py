@@ -3,7 +3,6 @@
 
     python3 build/verify_live.py dist [https://getfort.io]
     python3 build/verify_live.py --report dist   # list differences once, never fail
-    python3 build/verify_live.py --already-live dist   # already_live=yes only if live build.json is identical
 
 Every page, stylesheet, script, asset and download is fetched and compared byte
 for byte; an unknown path must return 404 with the not-found page. Retries for a
@@ -85,13 +84,6 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     dist = Path(args[0])
     base = (args[1] if len(args) > 1 else 'https://getfort.io').rstrip('/')
-    if '--already-live' in sys.argv:
-        # build.json holds a digest of every published file and of the Worker config, so an
-        # identical live build.json means nothing at all would change.
-        status, body = fetch(f'{base}/build.json')
-        live = status == 200 and body == (dist / 'build.json').read_bytes()
-        print(f'already_live={"yes" if live else "no"}')
-        return
     if '--report' in sys.argv:
         problems = mismatches(dist, base, explain=True)
         print('\n'.join(problems) if problems else f'{base} already serves dist/ exactly.')

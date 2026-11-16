@@ -1,171 +1,45 @@
 name: site
 
-# Builds getfort.io from this repo plus Fort's main branch; deploys on main.
-# - push to main here: build and deploy
-# - pull request: build and check only
-# - workflow_dispatch: started by Fort's site-dispatch workflow after a push to Fort
-#   main that changes docs/site/** or deploy/terraform/customer/**. The build still
-#   uses Fort's current main, which must contain the commit that asked, so an older
-#   Fort commit can never replace a newer one.
-# Only the deploy job holds the Cloudflare token, as a secret of the `production`
-# environment, which only main may use. It deploys only if the live site was last
-# deployed by this workflow, or an admin compared the build with the live version and set
-# that version id as the environment variable LIVE_VERSION_REVIEWED (build/live_guard.py).
+# Checks this repo. It deploys nothing and holds no secrets: getfort.io is built and
+# deployed by Cloudflare Workers Builds from the Fort repo, which pins a commit of this
+# repo (docs/site/_build/SITE_VERSION there). See docs/DEPLOY.md.
 on:
   push:
     branches: [main]
   pull_request:
-  workflow_dispatch:
-    inputs:
-      fort_sha:
-        description: Fort commit that asked for this build (Fort main must contain it)
-        required: false
-        default: ""
 
 permissions:
   contents: read
 
-# bash -eo pipefail: a failed command in a pipeline (build.py | tee) fails the step.
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+# bash -eo pipefail: a failed command in a pipeline fails the step.
 defaults:
   run:
     shell: bash
-
-# Runs on main queue one at a time and never cancel each other; other refs get their own
-# group, so they can never cancel a pending main deploy.
-concurrency:
-  group: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && 'fort-web-deploy' || format('site-{0}', github.ref) }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' || github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    outputs:
-      fort_sha: ${{ steps.build.outputs.fort_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Check out Fort main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: spawningpool/fort
-          ref: main
-          path: fort-src
-          token: ${{ secrets.FORT_READ_TOKEN }}
-          persist-credentials: false
-          sparse-checkout: |
-            docs/site
-            deploy/terraform/customer
-
-      - name: Fort main contains the commit that asked
-        if: github.event_name == 'workflow_dispatch' && inputs.fort_sha != ''
-        env:
-          GH_TOKEN: ${{ secrets.FORT_READ_TOKEN }}
-          FORT_SHA: ${{ inputs.fort_sha }}
-        run: |
-          if ! [[ "$FORT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::fort_sha must be a full commit id"; exit 1
-          fi
-          built=$(git -C fort-src rev-parse HEAD)
-          status=$(gh api "repos/spawningpool/fort/compare/${FORT_SHA}...${built}" --jq .status)
-          if [[ "$status" != identical && "$status" != ahead ]]; then
-            echo "::error::Fort main ($built) does not contain $FORT_SHA (compare: $status)"; exit 1
-          fi
-
-      - name: Unit tests
+      - name: Unit and end-to-end tests
         run: python3 -m unittest discover -s build/tests -v
 
-      - name: Build
-        id: build
-        run: |
-          python3 build/build.py --fort fort-src --ref HEAD --out dist | tee build.log
-          { echo '```'; cat build.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          echo "fort_sha=$(git -C fort-src rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
 
-      - name: Check the output
+      - name: Scripts parse
+        run: for file in *.js docs/*.js; do node --check "$file"; done
+
+      - name: Locked wrangler installs
         run: |
-          for file in dist/*.js dist/docs/*.js; do node --check "$file"; done
-          for internal in docs/DEPLOY.md docs/MARKDOWN.md PRODUCT.md README.md build; do
-            if [ -e "dist/$internal" ]; then echo "::error::$internal must not be published"; exit 1; fi
-          done
-          (cd dist/downloads && sha256sum -c fort-terraform-customer.zip.sha256)
-
-      - name: Compare with live
-        run: |
-          { echo '### Differences from the live site'; echo '```';
-            python3 build/verify_live.py --report dist https://getfort.io; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: dist
-          path: dist
-          retention-days: 7
-
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    environment: production
-    env:
-      # The deploy switch: until the owner adds the token, runs on main deploy nothing.
-      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
-    steps:
-      - name: Deploys are off
-        if: env.HAS_TOKEN != 'true'
-        run: echo "::notice::Not deployed, because CLOUDFLARE_API_TOKEN is not set in the production environment."
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: env.HAS_TOKEN == 'true'
-        with:
-          persist-credentials: false
-
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        if: env.HAS_TOKEN == 'true'
-        with:
-          name: dist
-          path: dist
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        if: env.HAS_TOKEN == 'true'
-        with:
-          node-version: "22"
-
-      # Installed from package-lock.json, without install scripts and before the token is in
-      # any step's environment.
-      - name: Install wrangler
-        if: env.HAS_TOKEN == 'true'
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      # Fort's schedule may ask more than once for the same change: if live /build.json is
-      # identical (same files, config and commits), there is nothing to deploy.
-      - name: Already live?
-        id: live
-        if: env.HAS_TOKEN == 'true'
-        run: python3 build/verify_live.py --already-live dist https://getfort.io | tee -a "$GITHUB_OUTPUT"
-
-      - name: Live site was deployed by fort-site, or was reviewed
-        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          LIVE_VERSION_REVIEWED: ${{ vars.LIVE_VERSION_REVIEWED }}
-        run: ./node_modules/.bin/wrangler deployments list --name fort-web --json | python3 build/live_guard.py
-
-      - name: Deploy
-        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FORT_BUILT: ${{ needs.build.outputs.fort_sha }}
-        run: >-
-          ./node_modules/.bin/wrangler deploy
-          --message "fort-site ${GITHUB_SHA::12} + fort ${FORT_BUILT::12}"
-
-      - name: Live site serves this build
-        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
-        run: python3 build/verify_live.py dist https://getfort.io
+          npm ci --ignore-scripts --no-audit --no-fund
+          ./node_modules/.bin/wrangler --version
