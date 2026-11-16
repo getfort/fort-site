@@ -25,6 +25,11 @@ on:
 permissions:
   contents: read
 
+# bash -eo pipefail: a failed command in a pipeline (build.py | tee) fails the step.
+defaults:
+  run:
+    shell: bash
+
 # Runs on main queue one at a time and never cancel each other; other refs get their own
 # group, so they can never cancel a pending main deploy.
 concurrency:
@@ -138,8 +143,8 @@ jobs:
         if: env.HAS_TOKEN == 'true'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      # Fort's schedule may ask more than once for the same change: if the live site
-      # already serves this exact build, there is nothing to deploy.
+      # Fort's schedule may ask more than once for the same change: if live /build.json is
+      # identical (same files, config and commits), there is nothing to deploy.
       - name: Already live?
         id: live
         if: env.HAS_TOKEN == 'true'

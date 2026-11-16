@@ -88,13 +88,28 @@ def build(fort_repo, ref, out):
         target.write_text(rendered)
     checksum, entries = write_package(fort, out / 'downloads')
     stamp(out)
-    # /build.json names the commits this build came from. Fort's site-dispatch reads
-    # fort_sha to tell whether main has docs or Terraform changes the live site lacks.
-    record = {'fort_sha': fort.sha, 'fort_site_sha': site_sha()}
-    (out / 'build.json').write_text(json.dumps(record, sort_keys=True) + '\n')
     # Workers Static Assets reads _headers and does not publish it.
     (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n')
+    # /build.json names what this build is. Fort's site-dispatch reads fort_sha to tell
+    # whether main has docs or Terraform changes the live site lacks. dist_sha256 covers
+    # every published path and its content (so a removed page counts) and wrangler_sha256
+    # the Worker config: the deploy is skipped only when live build.json is identical.
+    record = {
+        'dist_sha256': dist_digest(out),
+        'fort_sha': fort.sha,
+        'fort_site_sha': site_sha(),
+        'wrangler_sha256': hashlib.sha256((SITE / 'wrangler.jsonc').read_bytes()).hexdigest(),
+    }
+    (out / 'build.json').write_text(json.dumps(record, sort_keys=True) + '\n')
     return fort.sha, sorted(pages), checksum, entries
+
+
+def dist_digest(out):
+    """sha256 over the sorted list of every file in out/ with its sha256."""
+    lines = []
+    for path in sorted(p for p in out.rglob('*') if p.is_file()):
+        lines.append(f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(out).as_posix()}\n')
+    return hashlib.sha256(''.join(lines).encode()).hexdigest()
 
 
 def site_sha():

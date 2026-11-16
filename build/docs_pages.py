@@ -77,7 +77,8 @@ def page(source, page_path, sidebar_source):
         links = ''.join(f'<a href="{attr(h)}">{inline(t)}</a>' for t, h in map(link_item, meta['contents']))
         main = f'<nav class="page-contents" aria-label="On this page"><span>On this page</span>{links}</nav>\n{main}'
     side = sidebar(sidebar_source, docs, page_path)
-    check_safe(main + side + inline(meta['skip']))
+    for fragment in (main, side, inline(meta['skip'])):
+        check_safe(fragment)
     values = {
         'canonical': attr(canonical), 'og': og, 'description': attr(meta['description']),
         'title': html.escape(meta['title'], quote=False), 'skip': inline(meta['skip']),

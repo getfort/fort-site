@@ -63,7 +63,11 @@ class Safety(unittest.TestCase):
         for bad in ('<script>x</script>', '<iframe src="https://x"></iframe>', '<form></form>',
                     '<a href="javascript:alert(1)">x</a>', '<a href="java&#x09;script:x">x</a>',
                     '<a href=" JavaScript:x">x</a>', '<img src="data:image/png;base64,AA">',
-                    '<span onclick="x">x</span>', '<base href="https://evil">', '<style>x</style>'):
+                    '<span onclick="x">x</span>', '<base href="https://evil">', '<style>x</style>',
+                    '<noscript><p title="</noscript><img src=x onerror=alert(1)>"></p></noscript>',
+                    '<!--> <img src=x onerror=alert(1)> -->', '<?x ?>', '<p style="x">x</p>',
+                    '<plaintext>', '</x <img src=x onerror=alert(1)>>', '<span title="t">x</span>',
+                    '<a href="https://x" target="_top">x</a>', '<span class="a'):
             with self.assertRaises(MarkdownError, msg=bad):
                 check_safe(render(bad))
         for bad in ('[x](javascript:alert)', '[x](#a){onclick="x"}', 'text <svg onload=x>'):

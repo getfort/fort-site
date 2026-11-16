@@ -25,10 +25,11 @@ Only GitHub Actions deploys (`.github/workflows/site.yml`), and every deploy is
 - a pull request here builds and checks, and does not deploy.
 
 Fort's `site-dispatch` also runs on a schedule, because merges by Fort's merge bot start
-no push workflows, so it may ask more than once for one change. A deploy is skipped when
-the live site already serves exactly this build.
+no push workflows, so it may ask more than once for one change. A deploy is skipped only
+when the live `/build.json` is identical to the new one: it holds a digest of every
+published file and of `wrangler.jsonc`, so a removed page or a config change still deploys.
 
-Every deploy publishes `/build.json` (`{"fort_sha": ..., "fort_site_sha": ...}`, served with
+Every deploy publishes `/build.json` (`fort_sha`, `fort_site_sha`, `dist_sha256`, `wrangler_sha256`; served with
 `Cache-Control: no-cache` through `_headers`). Fort's scheduled `site-dispatch` compares its
 `fort_sha` with Fort `main` and dispatches only when `docs/site/` or the customer Terraform
 changed since.
@@ -52,7 +53,7 @@ Cloudflare token is in any step's environment.
 Done once by the owner in GitHub and Cloudflare. No agent creates, sees or handles a token.
 
 1. **Branch protection on `main`** (Settings → Branches): require a pull request and the
-   `site / build` check, and block force pushes and deletion.
+   `build` check, and block force pushes and deletion.
 2. **`production` environment** (Settings → Environments → New environment):
    - Deployment branches and tags: **Selected branches**, `main` only.
    - Environment secret `CLOUDFLARE_API_TOKEN`: a Cloudflare custom token with
