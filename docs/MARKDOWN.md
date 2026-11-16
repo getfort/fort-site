@@ -2,7 +2,8 @@
 
 The docs pages are written in Fort's `docs/site/`, one folder per page, mirroring the
 URL: `docs/site/gcp/reference/index.md` is https://getfort.io/docs/gcp/reference/.
-`docs/site/_sidebar.md` is the docs navigation. `docs/site/README.md` is not published.
+`docs/site/_sidebar.md` is the docs navigation. `docs/site/README.md` and `docs/site/_build/`
+(the build entry) are not published.
 
 The renderer (`build/site_markdown.py`) supports a small, strict set of Markdown.
 Anything else stops the build, so a typo never publishes a broken page.

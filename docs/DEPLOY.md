@@ -8,66 +8,64 @@ The site is hosted on **Cloudflare Workers Static Assets**.
 | Live URLs | https://getfort.io, https://www.getfort.io |
 | workers.dev URL | off: with custom domains in `routes`, Wrangler disables `workers.dev` |
 | Cloudflare account | `7be48c17ff1b7cfb0a4b65cae4cb8ad3` |
-| Config | [`wrangler.jsonc`](../wrangler.jsonc) |
+| Worker config | Fort repo, `docs/site/_build/wrangler.jsonc` |
 
 It is a Worker, not a Pages project: `wrangler pages deploy` is the wrong command.
 
 ## How it deploys
 
-Only GitHub Actions deploys (`.github/workflows/site.yml`), and every deploy is
-**this repo's `main` plus Fort's `main`**:
+**Cloudflare Workers Builds**, connected to the Fort repo (`spawningpool/fort`) through
+Cloudflare's GitHub app, builds and deploys on every push to Fort `main` that changes the
+docs, the customer Terraform or the build entry. Nothing else deploys: not this repo, not
+a laptop. The live site is Fort `main` built with the fort-site commit Fort pins.
 
-- a push to this repo's `main` builds and deploys;
-- a push to Fort's `main` that changes `docs/site/**` or `deploy/terraform/customer/**`
-  runs Fort's `site-dispatch` workflow, which starts this workflow with the Fort commit.
-  This workflow still builds from Fort's current `main`, and fails if that does not
-  contain the commit that asked, so an older commit can never replace a newer one;
-- a pull request here builds and checks, and does not deploy.
+- Fort's `docs/site/_build/build.sh` fetches this repo at the commit in
+  `docs/site/_build/SITE_VERSION` (a full 40-hex sha), runs its tests, builds `dist/`
+  from that Fort checkout, and installs wrangler from this repo's `package-lock.json`
+  (`npm ci --ignore-scripts`).
+- Fort's `docs/site/_build/deploy.sh` runs that wrangler with Fort's
+  `docs/site/_build/wrangler.jsonc`. It refuses to run outside Workers Builds.
+- A change here goes live only when a reviewed Fort PR moves `SITE_VERSION` to it.
 
-Fort's `site-dispatch` also runs on a schedule, because merges by Fort's merge bot start
-no push workflows, so it may ask more than once for one change. A deploy is skipped when
-the live site already serves exactly this build.
+Every deploy publishes `/build.json` (`fort_sha`, `fort_site_sha`, and `dist_sha256`, a
+digest of every published path and its content), served with `Cache-Control: no-cache`
+through `_headers`, so anyone can see what is live.
 
-Every deploy publishes `/build.json` (`{"fort_sha": ..., "fort_site_sha": ...}`, served with
-`Cache-Control: no-cache` through `_headers`). Fort's scheduled `site-dispatch` compares its
-`fort_sha` with Fort `main` and dispatches only when `docs/site/` or the customer Terraform
-changed since.
+## Workers Builds settings
 
-Runs queue one at a time. Each deploy's message names both commits, so
-`npx wrangler deployments list --name fort-web` shows what is live.
+Set once by the owner in the Cloudflare dashboard: Workers & Pages → `fort-web` →
+Settings → Builds → Connect, then the GitHub repository `spawningpool/fort`.
 
-Every build lists its differences from the live site in the run summary ("Compare with
-live"). The deploy job then checks who deployed the live version (`build/live_guard.py`).
-If it was not this workflow (a manual deploy, a rollback, or the first deploy after the
-move from `web-pages`), it stops. An admin then reads the comparison, makes sure nothing
-live is missing from git, sets the version id the job printed as the `production`
-environment variable `LIVE_VERSION_REVIEWED`, and reruns the workflow. Only admins can set
-environment variables; the dispatch token cannot.
+| Setting | Value |
+|---|---|
+| Production branch | `main` |
+| Non-production branch builds | off |
+| Root directory | `/` (the repository root) |
+| Build watch paths, include | `docs/site/**`, `deploy/terraform/customer/**` |
+| Build command | `bash docs/site/_build/build.sh` |
+| Deploy command | `bash docs/site/_build/deploy.sh` |
+| Build variables and secrets | none |
+| API token | the one Workers Builds creates |
 
-Wrangler comes from `package-lock.json` (`npm ci --ignore-scripts`), installed before the
-Cloudflare token is in any step's environment.
+The build image (Ubuntu 24.04) has Python 3.14, Node.js and git; the build installs no
+Python packages. Cloudflare's GitHub app gets read access to the Fort repo; the owner
+accepted that on 2026-11-16.
 
-## Owner setup
+**First deploy:** connect the repository only after a local build of the Fort head that
+will be live has been compared with the live site (see "Compare with live").
 
-Done once by the owner in GitHub and Cloudflare. No agent creates, sees or handles a token.
+## Compare with live
 
-1. **Branch protection on `main`** (Settings → Branches): require a pull request and the
-   `site / build` check, and block force pushes and deletion.
-2. **`production` environment** (Settings → Environments → New environment):
-   - Deployment branches and tags: **Selected branches**, `main` only.
-   - Environment secret `CLOUDFLARE_API_TOKEN`: a Cloudflare custom token with
-     Account → **Workers Scripts: Edit** (account `7be48c17ff1b7cfb0a4b65cae4cb8ad3`) and
-     Zone → **Workers Routes: Edit** and **DNS: Edit**, for the zone `getfort.io` only.
-     Adding it turns deploys on: without it, runs on `main` build, check and deploy nothing.
-   - Optional: **Required reviewers** set to yourself. Every deploy then waits for your
-     click, including docs changes from Fort `main`.
-   - For the first deploy only: environment variable `LIVE_VERSION_REVIEWED`, set to the
-     version id the deploy job printed, once the comparison has been checked.
-3. **Repository secret `FORT_READ_TOKEN`** (Settings → Secrets and variables → Actions): a
-   GitHub fine-grained token, resource owner `spawningpool`, repository `spawningpool/fort`
-   only, **Contents: Read-only**, with an expiry.
-4. **In the Fort repo, repository secret `FORT_SITE_DISPATCH_TOKEN`:** a fine-grained token,
-   repository `spawningpool/fort-site` only, **Actions: Read and write**, with an expiry.
+From a Fort checkout:
+
+```bash
+FORT_SITE_REPO=~/Work/fort-site bash docs/site/_build/build.sh
+python3 ~/Work/fort-site/build/verify_live.py --report docs/site/_build/dist
+```
+
+`--report` lists every file that differs from https://getfort.io, saying when a page only
+differs in bytes but reads the same. Without `--report` it checks that the live site
+serves `dist/` exactly (the check to run after a deploy).
 
 ## Domains
 
@@ -79,40 +77,19 @@ either hostname already has an A, AAAA or CNAME record.
 
 `build/build.py` assembles `dist/`, the only directory that gets published: the landing
 page, `404.html`, the CSS/JavaScript, `assets/`, the docs pages rendered from Fort's
-`docs/site/`, and the Terraform ZIP and checksum packed from Fort's
-`deploy/terraform/customer/`. This file, `docs/MARKDOWN.md` and `PRODUCT.md` stay out.
-The build adds content hashes to every CSS/JavaScript file, the logo and the favicon.
-Unknown paths serve `404.html`.
+`docs/site/`, `/build.json`, and the Terraform ZIP and checksum packed from Fort's
+`deploy/terraform/customer/`. This repo's docs, `PRODUCT.md` and `build/` stay out, as
+does Fort's `docs/site/_build/`. Unknown paths serve `404.html`.
 
 When adding a landing-page file, add it to `STATIC` in `build/build.py`. A new docs page
 is a new `docs/site/<page>/index.md` in Fort; it needs no change here.
 
-## Verify after deployment
-
-The workflow checks every docs page and the download after each deploy. By hand:
-
-- Open https://getfort.io and https://www.getfort.io.
-- Check the logo, CSS and JavaScript load without browser errors.
-- Check `/docs/` and each guide, their cross-links and section navigation, desktop and
-  mobile navigation, the Warden example and the early-access link.
-- Visit an unknown path and confirm an HTTP 404 with the Fort not-found page.
-- Confirm `/downloads/fort-terraform-customer.zip` matches its `.sha256` and that its
-  `START_HERE.txt` names the current Fort `main` commit.
-
 ## Roll back
 
-A rollback changes the live Worker, not Git, and the next push to either `main` will
-deploy again. Prefer fixing forward on `main`. In an emergency:
-
-```bash
-npx wrangler deployments list --name fort-web
-```
-
-```bash
-npx wrangler rollback --name fort-web
-```
-
-Then fix `main` before anything else merges.
+Prefer fixing forward on Fort `main`. In an emergency, Cloudflare's dashboard
+(Workers & Pages → `fort-web` → Deployments) or `npx wrangler rollback --name fort-web`
+restores an earlier version. A rollback changes the live Worker, not Git, and the next
+build of `main` deploys again, so fix `main` straight after.
 
 ## Copy
 

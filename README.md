@@ -10,8 +10,11 @@ the Fort repo (`spawningpool/fort`) at the exact commit being built:
 - `/downloads/fort-terraform-customer.zip` (and its `.sha256`) is packed from Fort's
   `deploy/terraform/customer/`.
 
-The live site is always Fort `main` plus this repo's `main`. A push to either deploys
-(see `docs/DEPLOY.md`); nothing is deployed from a laptop or from an older commit.
+The live site is always Fort `main` built with the fort-site commit that Fort pins in
+`docs/site/_build/SITE_VERSION`. Cloudflare Workers Builds, connected to the Fort repo,
+builds and deploys on every change to `main` (see `docs/DEPLOY.md`). This repo deploys
+nothing itself; a change here reaches the live site only through a reviewed Fort PR that
+moves the pin.
 
 ## What is here
 
@@ -34,12 +37,12 @@ The live site is always Fort `main` plus this repo's `main`. A push to either de
     (hashes of the packed source files), `START_HERE.txt` (records the Fort commit) and
     `LICENSE` (standard Apache-2.0 text, `build/APACHE-2.0.txt`). The ZIP is
     deterministic: one commit always gives the same bytes.
-  - `verify_live.py`: compares `dist/` with the live site; `live_guard.py`: stops a
-    deploy when the live version was not deployed by this workflow.
+  - `verify_live.py`: compares `dist/` with the live site (`--report` lists the
+    differences; without it, it checks that the live site serves `dist/` exactly).
   - `tests/`: unit tests (`python3 -m unittest discover -s build/tests`).
-- `.github/workflows/site.yml`: build on every PR, build and deploy on `main`.
-- `wrangler.jsonc`: the Worker and its domains. `package.json` and `package-lock.json` pin
-  wrangler, the deploy tool; the site itself has no npm dependencies.
+- `.github/workflows/site.yml`: tests on every PR and push. It deploys nothing.
+- `package.json` and `package-lock.json` pin wrangler, the deploy tool that Fort's
+  `docs/site/_build/deploy.sh` runs; the site itself has no npm dependencies.
 - `PRODUCT.md`: who the site is for and what it says.
 
 Early-access buttons lead to the Fort Typeform (`twrlRIKM`).
@@ -47,13 +50,14 @@ The Warden panel is an illustrative example, not a connected environment.
 
 ## Build and preview locally
 
-Needs Python 3.10+ and a Fort checkout.
+From a Fort checkout, with Python 3.10+ (no packages):
 
 ```bash
-python3 build/build.py --fort ~/Work/fort --ref origin/main
-python3 -m http.server 8003 --directory dist
+FORT_SITE_REPO=~/Work/fort-site bash docs/site/_build/build.sh
+python3 -m http.server 8003 --directory docs/site/_build/dist
 ```
 
-`--ref` takes any Fort commit, branch or tag. To preview docs edits, commit them on a
-Fort branch and pass that branch. The build reads committed files only, never the
-Fort working tree.
+`FORT_SITE_REPO` points the build at a local fort-site checkout instead of GitHub, to
+preview a fort-site change before it is pinned; it is refused inside Workers Builds. The
+build reads committed Fort files only, so commit docs edits on a branch first. Or run
+this repo's build directly: `python3 build/build.py --fort ~/Work/fort --ref <branch>`.

@@ -233,40 +233,74 @@ def link_item(item):
     return match.group(1), match.group(2)
 
 
-UNSAFE_TAGS = {'script', 'iframe', 'object', 'embed', 'form', 'style', 'link', 'meta', 'base',
-               'frame', 'frameset', 'svg', 'math', 'input', 'button', 'textarea', 'select'}
-URL_ATTRS = {'href', 'src', 'action', 'formaction', 'xlink:href', 'srcset', 'poster', 'data', 'srcdoc'}
+# Docs pages may use only these tags and attributes: the ones the docs use today. Anything
+# else stops the build, so a docs change cannot add script, styles, frames or forms.
+SAFE_TAGS = {'a', 'aside', 'b', 'br', 'code', 'details', 'div', 'em', 'figcaption', 'figure',
+             'h1', 'h2', 'h3', 'li', 'nav', 'ol', 'p', 'pre', 'section', 'small', 'span',
+             'strong', 'summary', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'ul'}
+SAFE_ATTRS = {'class', 'id', 'href', 'download', 'target', 'rel', 'aria-current', 'aria-hidden',
+              'aria-label', 'role', 'tabindex', 'open'}
 SAFE_SCHEMES = {'http', 'https'}
 
 
 class _SafetyCheck(HTMLParser):
     def __init__(self):
-        super().__init__(convert_charrefs=True)
+        # Character references stay as written, so any '<' left in text is markup the
+        # parser did not read as a tag: refused, since a browser may read it differently.
+        super().__init__(convert_charrefs=False)
         self.problems = []
 
     def handle_starttag(self, tag, attributes):
-        if tag in UNSAFE_TAGS:
+        if tag not in SAFE_TAGS:
             self.problems.append(f'<{tag}> is not allowed')
         for name, value in attributes:
-            if name.startswith('on'):
-                self.problems.append(f'<{tag} {name}=...>: event attributes are not allowed')
-            elif name in URL_ATTRS:
+            if '<' in (value or ''):
+                self.problems.append(f'<{tag} {name}=...>: "<" in an attribute value')
+            elif name not in SAFE_ATTRS:
+                self.problems.append(f'<{tag} {name}=...>: attribute not allowed')
+            elif name == 'href':
                 plain = re.sub(r'[\x00-\x20]', '', value or '')
                 scheme = re.match(r'([a-zA-Z][a-zA-Z0-9+.-]*):', plain)
-                if name == 'srcdoc' or (scheme and scheme.group(1).lower() not in SAFE_SCHEMES):
-                    self.problems.append(f'<{tag} {name}="{value}">: only http(s), relative and # links')
+                if scheme and scheme.group(1).lower() not in SAFE_SCHEMES:
+                    self.problems.append(f'<{tag} href="{value}">: only http(s), relative and # links')
+            elif name == 'target' and value != '_blank':
+                self.problems.append(f'<{tag} target="{value}">: only _blank')
 
     handle_startendtag = handle_starttag
 
+    def handle_endtag(self, tag):
+        if tag not in SAFE_TAGS:
+            self.problems.append(f'</{tag}> is not allowed')
+
+    def handle_data(self, data):
+        if '<' in data:
+            self.problems.append(f'unparsed markup in text: {data[:40]!r}')
+
+    def handle_comment(self, data):
+        self.problems.append('comments are not allowed')
+
+    def handle_decl(self, decl):
+        self.problems.append('<!...> declarations are not allowed')
+
+    handle_pi = handle_decl
+    unknown_decl = handle_decl
+
 
 def check_safe(rendered):
-    """Refuse active content in HTML rendered from docs Markdown.
+    """Refuse anything but the allowed tags and attributes in HTML from docs Markdown.
 
-    The docs are written in the Fort repo, so a docs change must not be able to
-    put script, frames, forms, event handlers or javascript: links on the site.
+    The docs are written in the Fort repo, so a docs change must not be able to put
+    script, styles, frames, forms, event handlers or javascript: links on the site.
     """
+    problems = []
+    if '<!' in rendered or '<?' in rendered:
+        problems.append('<! and <? are not allowed')
     checker = _SafetyCheck()
     checker.feed(rendered)
+    if checker.rawdata:
+        # An unfinished tag would swallow the page markup that follows it.
+        problems.append(f'unfinished markup: {checker.rawdata[:40]!r}')
     checker.close()
-    if checker.problems:
-        raise MarkdownError('; '.join(dict.fromkeys(checker.problems)))
+    problems += checker.problems
+    if problems:
+        raise MarkdownError('; '.join(dict.fromkeys(problems)))
