@@ -45,7 +45,7 @@ def mismatches(dist, base, explain=False):
     problems = []
     for path in sorted(p for p in dist.rglob('*') if p.is_file()):
         rel = path.relative_to(dist).as_posix()
-        if rel == '404.html':
+        if rel in ('404.html', '_headers'):  # _headers is read by Cloudflare, not served
             continue
         status, body = fetch(url_for(base, rel))
         mine = path.read_bytes()
@@ -55,6 +55,15 @@ def mismatches(dist, base, explain=False):
                 diff = compare(mine.decode(), body.decode())
                 note = f'differs: {diff}' if diff else 'bytes differ, page reads the same'
             problems.append(f'{url_for(base, rel)}: HTTP {status}, {note}')
+    if (dist / 'build.json').exists():
+        request = urllib.request.Request(f'{base}/build.json', headers={'User-Agent': 'fort-site-verify'})
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                cache = response.headers.get('Cache-Control', '')
+        except urllib.error.URLError:
+            cache = ''
+        if 'no-cache' not in cache:
+            problems.append(f'{base}/build.json: Cache-Control is {cache!r}, expected no-cache')
     status, body = fetch(f'{base}/no-such-page-{int(time.time())}')
     if status != 404 or body != (dist / '404.html').read_bytes():
         problems.append(f'unknown path: HTTP {status}, expected 404 with 404.html')

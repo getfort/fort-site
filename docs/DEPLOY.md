@@ -28,6 +28,11 @@ Fort's `site-dispatch` also runs on a schedule, because merges by Fort's merge b
 no push workflows, so it may ask more than once for one change. A deploy is skipped when
 the live site already serves exactly this build.
 
+Every deploy publishes `/build.json` (`{"fort_sha": ..., "fort_site_sha": ...}`, served with
+`Cache-Control: no-cache` through `_headers`). Fort's scheduled `site-dispatch` compares its
+`fort_sha` with Fort `main` and dispatches only when `docs/site/` or the customer Terraform
+changed since.
+
 Runs queue one at a time. Each deploy's message names both commits, so
 `npx wrangler deployments list --name fort-web` shows what is live.
 

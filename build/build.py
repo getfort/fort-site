@@ -9,7 +9,9 @@ here keeps its own copy of either.
 """
 import argparse
 import hashlib
+import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -86,7 +88,21 @@ def build(fort_repo, ref, out):
         target.write_text(rendered)
     checksum, entries = write_package(fort, out / 'downloads')
     stamp(out)
+    # /build.json names the commits this build came from. Fort's site-dispatch reads
+    # fort_sha to tell whether main has docs or Terraform changes the live site lacks.
+    record = {'fort_sha': fort.sha, 'fort_site_sha': site_sha()}
+    (out / 'build.json').write_text(json.dumps(record, sort_keys=True) + '\n')
+    # Workers Static Assets reads _headers and does not publish it.
+    (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n')
     return fort.sha, sorted(pages), checksum, entries
+
+
+def site_sha():
+    try:
+        sha = subprocess.check_output(['git', '-C', str(SITE), 'rev-parse', 'HEAD'], text=True).strip()
+    except (OSError, subprocess.CalledProcessError) as err:
+        raise BuildError(f'cannot read this repository\'s commit: {err}') from err
+    return sha
 
 
 def main():

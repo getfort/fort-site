@@ -21,7 +21,8 @@ The live site is always Fort `main` plus this repo's `main`. A push to either de
 - `docs/docs.css`, `docs/docs.js`: docs layout, navigation and contents.
 - `assets/`: logo and favicon.
 - `build/`: the build.
-  - `build.py`: assembles `dist/`, the only directory that is published.
+  - `build.py`: assembles `dist/`, the only directory that is published, including
+    `/build.json` with the Fort and fort-site commits it was built from.
   - `docs-page.html`: the shared docs page frame (header, sidebar slot, footer).
   - `site_markdown.py`, `docs_pages.py`: render Fort's docs Markdown into that frame.
     The Markdown syntax is described in `docs/MARKDOWN.md`. The build refuses scripts,
