@@ -27,6 +27,13 @@ Only GitHub Actions deploys (`.github/workflows/site.yml`), and every deploy is
 Runs queue one at a time. Each deploy's message names both commits, so
 `npx wrangler deployments list --name fort-web` shows what is live.
 
+Every build lists its differences from the live site in the run summary ("Compare with
+live"). The deploy job then checks who deployed the live version (`build/live_guard.py`):
+if it was not this workflow (a manual deploy, a rollback, or the first deploy after the
+move from `web-pages`), it stops. Read the comparison, make sure nothing live is missing
+from git, and run the workflow on `main` with `live_version_reviewed` set to the version
+id the job printed.
+
 ### Secrets
 
 Set by the owner in this repo's settings (Settings → Secrets and variables → Actions):
@@ -36,11 +43,11 @@ Set by the owner in this repo's settings (Settings → Secrets and variables →
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token from the "Edit Cloudflare Workers" template, limited to the account above and the `getfort.io` zone. |
 | `FORT_READ_TOKEN` | GitHub fine-grained token, resource owner `spawningpool`, repository `spawningpool/fort` only, permission **Contents: Read-only**. |
 
-`CLOUDFLARE_API_TOKEN` is also the deploy switch: without it, runs on `main` build and
-check, and deploy nothing.
+Only the deploy job sees `CLOUDFLARE_API_TOKEN`. It is also the deploy switch: without
+it, runs on `main` build and check, and deploy nothing.
 
 Fort's repo holds `FORT_SITE_DISPATCH_TOKEN`: a fine-grained token for
-`spawningpool/fort-site` only, permission **Actions: Read and write**.
+`spawningpool/fort-site` only, permission **Actions: Read and write**, with an expiry.
 
 ## Domains
 

@@ -7,6 +7,9 @@ name: site
 #   main that changes docs/site/** or deploy/terraform/customer/**. The build still
 #   uses Fort's current main, which must contain the commit that asked, so an older
 #   Fort commit can never replace a newer one.
+# Only the deploy job holds the Cloudflare token. It deploys only if the live site was
+# last deployed by this workflow, or a person compared the build with the live version
+# and named it in live_version_reviewed (build/live_guard.py).
 on:
   push:
     branches: [main]
@@ -15,6 +18,10 @@ on:
     inputs:
       fort_sha:
         description: Fort commit that asked for this build (Fort main must contain it)
+        required: false
+        default: ""
+      live_version_reviewed:
+        description: Live Cloudflare version id you compared with this build (only when the deploy asks for it)
         required: false
         default: ""
 
@@ -26,13 +33,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  site:
+  build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      # Deploys run only on main, and only once the owner has added the Cloudflare
-      # token: until then every run builds and checks, and deploys nothing.
-      DEPLOY: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.CLOUDFLARE_API_TOKEN != '' }}
+    timeout-minutes: 10
+    outputs:
+      fort_sha: ${{ steps.build.outputs.fort_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,10 +74,11 @@ jobs:
         run: python3 -m unittest discover -s build/tests -v
 
       - name: Build
+        id: build
         run: |
           python3 build/build.py --fort fort-src --ref HEAD --out dist | tee build.log
           { echo '```'; cat build.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          echo "FORT_BUILT=$(git -C fort-src rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "fort_sha=$(git -C fort-src rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -86,18 +92,62 @@ jobs:
           done
           (cd dist/downloads && sha256sum -c fort-terraform-customer.zip.sha256)
 
+      - name: Compare with live
+        run: |
+          { echo '### Differences from the live site'; echo '```';
+            python3 build/verify_live.py --report dist https://getfort.io; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      # The deploy switch: until the owner adds the token, runs on main deploy nothing.
+      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
       - name: Deploys are off
-        if: env.DEPLOY != 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: env.HAS_TOKEN != 'true'
         run: echo "::notice::Not deployed, because CLOUDFLARE_API_TOKEN is not set in this repo."
 
-      - name: Deploy
-        if: env.DEPLOY == 'true'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.HAS_TOKEN == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: env.HAS_TOKEN == 'true'
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: env.HAS_TOKEN == 'true'
+        with:
+          node-version: "22"
+
+      - name: Live site was deployed by fort-site, or was reviewed
+        if: env.HAS_TOKEN == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          LIVE_VERSION_REVIEWED: ${{ inputs.live_version_reviewed }}
+        run: npx --yes wrangler@4.162.0 deployments list --name fort-web --json | python3 build/live_guard.py
+
+      - name: Deploy
+        if: env.HAS_TOKEN == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FORT_BUILT: ${{ needs.build.outputs.fort_sha }}
         run: >-
           npx --yes wrangler@4.162.0 deploy
           --message "fort-site ${GITHUB_SHA::12} + fort ${FORT_BUILT::12}"
 
       - name: Live site serves this build
-        if: env.DEPLOY == 'true'
+        if: env.HAS_TOKEN == 'true'
         run: python3 build/verify_live.py dist https://getfort.io

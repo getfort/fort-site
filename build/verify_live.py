@@ -2,6 +2,7 @@
 """Check that the live site serves exactly what is in dist/.
 
     python3 build/verify_live.py dist [https://getfort.io]
+    python3 build/verify_live.py --report dist   # list differences once, never fail
 
 Every page, stylesheet, script, asset and download is fetched and compared byte
 for byte; an unknown path must return 404 with the not-found page. Retries for a
@@ -15,6 +16,8 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+from html_compare import compare
 
 
 # Cloudflare Web Analytics adds its beacon to some HTML responses at the edge; it is
@@ -37,15 +40,20 @@ def url_for(base, rel):
     return f'{base}/{rel}'
 
 
-def mismatches(dist, base):
+def mismatches(dist, base, explain=False):
     problems = []
     for path in sorted(p for p in dist.rglob('*') if p.is_file()):
         rel = path.relative_to(dist).as_posix()
         if rel == '404.html':
             continue
         status, body = fetch(url_for(base, rel))
-        if status != 200 or body != path.read_bytes():
-            problems.append(f'{url_for(base, rel)}: HTTP {status}, {"differs" if status == 200 else "not served"}')
+        mine = path.read_bytes()
+        if status != 200 or body != mine:
+            note = 'differs' if status == 200 else 'not served'
+            if explain and status == 200 and rel.endswith('.html'):
+                diff = compare(mine.decode(), body.decode())
+                note = f'differs: {diff}' if diff else 'bytes differ, page reads the same'
+            problems.append(f'{url_for(base, rel)}: HTTP {status}, {note}')
     status, body = fetch(f'{base}/no-such-page-{int(time.time())}')
     if status != 404 or body != (dist / '404.html').read_bytes():
         problems.append(f'unknown path: HTTP {status}, expected 404 with 404.html')
@@ -53,8 +61,13 @@ def mismatches(dist, base):
 
 
 def main():
-    dist = Path(sys.argv[1])
-    base = (sys.argv[2] if len(sys.argv) > 2 else 'https://getfort.io').rstrip('/')
+    args = [a for a in sys.argv[1:] if a != '--report']
+    dist = Path(args[0])
+    base = (args[1] if len(args) > 1 else 'https://getfort.io').rstrip('/')
+    if '--report' in sys.argv:
+        problems = mismatches(dist, base, explain=True)
+        print('\n'.join(problems) if problems else f'{base} already serves dist/ exactly.')
+        return
     for attempt in range(1, 7):
         problems = mismatches(dist, base)
         if not problems:

@@ -1,8 +1,9 @@
 """Pack Fort's customer Terraform templates into the public download.
 
 Every tracked file under deploy/terraform/customer/ at the Fort commit goes in,
-except Fort's own tests and .gitignore. The ZIP is deterministic: the same
-commit always gives the same bytes and checksum.
+except Fort's own tests and .gitignore. The build stops on executables, symlinks,
+files over 1 MB, and any tracked tfvars, state, .terraform/ or key file. The ZIP is
+deterministic: the same commit always gives the same bytes and checksum.
 """
 import hashlib
 import zipfile
@@ -11,10 +12,30 @@ from pathlib import Path
 BASE = 'deploy/terraform/customer/'
 NAME = 'fort-terraform-customer'
 HERE = Path(__file__).parent
+MAX_BYTES = 1024 * 1024
 
 
 class PackageError(Exception):
     """The customer templates cannot be packed safely."""
+
+
+def forbidden(rel):
+    """Why a tracked path must never be near the public download, or None.
+
+    Applies to every tracked file under BASE, shipped or not: real variables,
+    Terraform state, provider caches and keys stop the build.
+    """
+    parts = rel.split('/')
+    name = parts[-1]
+    if name.endswith('.tfvars') or ('.tfvars.' in name and not name.endswith('.tfvars.example')):
+        return 'a tfvars file (only *.tfvars.example may be tracked)'
+    if '.tfstate' in name:
+        return 'Terraform state'
+    if '.terraform' in parts[:-1]:
+        return 'a .terraform/ directory'
+    if name.endswith(('.pem', '.key')):
+        return 'a key or certificate file'
+    return None
 
 
 def shipped(rel):
@@ -28,11 +49,17 @@ def contents(fort):
     entries = {}
     for mode, path in fort.files(BASE):
         rel = path[len(BASE):]
+        reason = forbidden(rel)
+        if reason:
+            raise PackageError(f'refusing {path}: {reason} is tracked')
         if not shipped(rel):
             continue
         if mode != '100644':
             raise PackageError(f'refusing {path}: mode {mode}, only regular non-executable files ship')
-        entries[rel] = fort.read(path)
+        data = fort.read(path)
+        if len(data) > MAX_BYTES:
+            raise PackageError(f'refusing {path}: {len(data)} bytes, over the 1 MB limit')
+        entries[rel] = data
     if 'README.md' not in entries:
         raise PackageError(f'{BASE}README.md is missing at {fort.sha}')
     manifest = ''.join(f'{hashlib.sha256(data).hexdigest()}  {name}\n' for name, data in sorted(entries.items()))

@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from docs_pages import page  # noqa: E402
+from html_compare import compare  # noqa: E402
 from package_terraform import PackageError, contents, shipped, write  # noqa: E402
 from site_markdown import MarkdownError, inline, render  # noqa: E402
 
@@ -82,6 +83,17 @@ class Pages(unittest.TestCase):
             page('---\ntitle: T\ndescription: D\nskip: S\ncolour: red\n---\n', '', SIDEBAR)
 
 
+class Compare(unittest.TestCase):
+    def test_same_page_despite_bytes(self):
+        self.assertIsNone(compare('<p>A &amp; B</p>\n<p class="x" id="y">C</p>',
+                                  '<p>A & B</p><p id="y" class="x">C</p>'))
+
+    def test_text_and_inline_spaces_count(self):
+        self.assertIsNotNone(compare('<p>A B</p>', '<p>A C</p>'))
+        self.assertIsNotNone(compare('<p><b>a</b> <i>b</i></p>', '<p><b>a</b><i>b</i></p>'))
+        self.assertIsNotNone(compare('<pre>a\n b</pre>', '<pre>a\nb</pre>'))
+
+
 class FakeFort:
     sha = 'c0ffee' * 6 + 'c0ff'
 
@@ -123,6 +135,21 @@ class Package(unittest.TestCase):
         for mode in ('100755', '120000'):
             with self.assertRaises(PackageError):
                 contents(self.fort(**{BASE + 'aws/run.sh': (mode, b'x')}))
+
+    def test_refuses_secrets_state_keys_and_large_files(self):
+        for path in ('gcp/terraform.tfvars', 'gcp/prod.tfvars.json', 'terraform.tfstate',
+                     'gcp/terraform.tfstate.backup', 'gcp/.terraform/providers/p', 'shared/tls.key',
+                     'shared/ca.pem', 'tests/fixtures/client.key'):
+            with self.assertRaises(PackageError, msg=path):
+                contents(self.fort(**{BASE + path: ('100644', b'x')}))
+        with self.assertRaises(PackageError):
+            contents(self.fort(**{BASE + 'gcp/big.tf': ('100644', b'x' * (1024 * 1024 + 1))}))
+
+    def test_keeps_examples_and_lock_files(self):
+        names = contents(self.fort(**{BASE + 'gcp/terraform.tfvars.example': ('100644', b'x'),
+                                      BASE + 'gcp/.terraform.lock.hcl': ('100644', b'x')}))
+        self.assertIn('gcp/terraform.tfvars.example', names)
+        self.assertIn('gcp/.terraform.lock.hcl', names)
 
     def test_deterministic(self):
         import tempfile

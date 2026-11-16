@@ -26,11 +26,14 @@ The live site is always Fort `main` plus this repo's `main`. A push to either de
   - `site_markdown.py`, `docs_pages.py`: render Fort's docs Markdown into that frame.
     The Markdown syntax is described in `docs/MARKDOWN.md`.
   - `package_terraform.py`: packs the Terraform ZIP. Every tracked file under
-    `deploy/terraform/customer/` goes in, except Fort's own `tests/` and `.gitignore`;
-    only regular, non-executable files are accepted. It adds `SOURCE_MANIFEST.sha256`
+    `deploy/terraform/customer/` goes in, except Fort's own `tests/` and `.gitignore`.
+    The build stops on executables, symlinks, files over 1 MB, and any tracked tfvars,
+    Terraform state, `.terraform/` or key file. It adds `SOURCE_MANIFEST.sha256`
     (hashes of the packed source files), `START_HERE.txt` (records the Fort commit) and
     `LICENSE` (standard Apache-2.0 text, `build/APACHE-2.0.txt`). The ZIP is
     deterministic: one commit always gives the same bytes.
+  - `verify_live.py`: compares `dist/` with the live site; `live_guard.py`: stops a
+    deploy when the live version was not deployed by this workflow.
   - `tests/`: unit tests (`python3 -m unittest discover -s build/tests`).
 - `.github/workflows/site.yml`: build on every PR, build and deploy on `main`.
 - `wrangler.jsonc`: the Worker and its domains.
