@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from docs_pages import page  # noqa: E402
 from html_compare import compare  # noqa: E402
 from live_guard import decide  # noqa: E402
+import verify_live  # noqa: E402
 from package_terraform import PackageError, contents, shipped, write  # noqa: E402
 from site_markdown import MarkdownError, check_safe, inline, render  # noqa: E402
 
@@ -145,6 +146,43 @@ class LiveGuard(unittest.TestCase):
 
     def test_stops_when_nothing_is_listed(self):
         self.assertFalse(decide([], 'b')[0])
+
+
+class Unreachable(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.dist = Path(tempfile.mkdtemp())
+        (self.dist / 'build.json').write_text('{}\n')
+        (self.dist / '404.html').write_text('nf')
+        self.real = verify_live.urllib.request.urlopen
+
+    def tearDown(self):
+        verify_live.urllib.request.urlopen = self.real
+
+    def test_unreachable_site_is_an_answer_not_a_crash(self):
+        import urllib.error
+        for err in (urllib.error.URLError('dns'), TimeoutError('slow'), ConnectionRefusedError()):
+            def refuse(*args, error=err, **kwargs):
+                raise error
+            verify_live.urllib.request.urlopen = refuse
+            self.assertEqual(verify_live.fetch('https://getfort.io/'), (0, b''))
+            problems = verify_live.mismatches(self.dist, 'https://getfort.io', explain=True)
+            self.assertIn('https://getfort.io/build.json: HTTP 0, unreachable', problems)
+
+    def test_already_live_answers_no_when_unreachable(self):
+        def refuse(*args, **kwargs):
+            raise TimeoutError('slow')
+        verify_live.urllib.request.urlopen = refuse
+        out = io.StringIO()
+        argv = sys.argv
+        sys.argv = ['verify_live.py', '--already-live', str(self.dist)]
+        try:
+            from contextlib import redirect_stdout
+            with redirect_stdout(out):
+                verify_live.main()
+        finally:
+            sys.argv = argv
+        self.assertEqual(out.getvalue().strip(), 'already_live=no')
 
 
 class FakeFort:

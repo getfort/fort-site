@@ -11,6 +11,7 @@ while, since a new deployment takes a few seconds to reach every edge.
 The one thing removed before comparing is the Cloudflare Web Analytics beacon,
 which Cloudflare adds to some HTML responses itself.
 """
+import http.client
 import re
 import sys
 import time
@@ -27,12 +28,22 @@ BEACON = re.compile(rb'<script [^>]*src="https://static\.cloudflareinsights\.com
 
 
 def fetch(url):
+    """(HTTP status, body without the beacon); (0, b'') when the site cannot be reached.
+
+    Unreachable (DNS, refused, timeout, TLS) is an answer, not a crash: the report says
+    so and --already-live answers no, so a deploy that would restore the site still runs.
+    """
     request = urllib.request.Request(url, headers={'User-Agent': 'fort-site-verify'})
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             return response.status, BEACON.sub(b'', response.read(), count=1)
     except urllib.error.HTTPError as err:
-        return err.code, BEACON.sub(b'', err.read(), count=1)
+        try:
+            return err.code, BEACON.sub(b'', err.read(), count=1)
+        except (OSError, http.client.HTTPException):
+            return err.code, b''
+    except (OSError, http.client.HTTPException):  # URLError and TimeoutError are OSErrors
+        return 0, b''
 
 
 def url_for(base, rel):
@@ -50,7 +61,7 @@ def mismatches(dist, base, explain=False):
         status, body = fetch(url_for(base, rel))
         mine = path.read_bytes()
         if status != 200 or body != mine:
-            note = 'differs' if status == 200 else 'not served'
+            note = 'differs' if status == 200 else 'unreachable' if status == 0 else 'not served'
             if explain and status == 200 and rel.endswith('.html'):
                 diff = compare(mine.decode(), body.decode())
                 note = f'differs: {diff}' if diff else 'bytes differ, page reads the same'
@@ -60,7 +71,7 @@ def mismatches(dist, base, explain=False):
         try:
             with urllib.request.urlopen(request, timeout=20) as response:
                 cache = response.headers.get('Cache-Control', '')
-        except urllib.error.URLError:
+        except (OSError, http.client.HTTPException):
             cache = ''
         if 'no-cache' not in cache:
             problems.append(f'{base}/build.json: Cache-Control is {cache!r}, expected no-cache')
