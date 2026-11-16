@@ -13,7 +13,7 @@ hosted on Cloudflare Workers Static Assets at https://getfort.io.
 - `docs/understand/`, `docs/deploy/`, `docs/policy/`, `docs/operations/`: focused concepts, deployment choices, policy/approvals and operations reference. Original `/docs/#section` links route to these pages with linked fallbacks.
 - `docs/docs.css`, `docs/docs.js`: shared responsive documentation navigation, local contents and presentation. Markdown files remain internal and excluded from publication.
 - `docs/tools/index.html`: practical agent/tool-server separation, managed-container deployment, client setup and first-call verification.
-- `docs/aws/index.html`, `docs/gcp/index.html`: Terraform deployment guides for early-access customer installations; keep examples aligned with Fort’s customer modules.
+- `docs/aws/index.html`, `docs/gcp/index.html`, `docs/oci/index.html`: Terraform deployment guides for early-access customer installations; keep examples aligned with Fort’s customer modules.
 - `assets/`: the existing Fort logo and favicon.
 - `404.html`: matching not-found page.
 - `build.sh`: assembles the published `dist/` and adds content hashes to CSS and JavaScript.
@@ -28,8 +28,8 @@ See `docs/DEPLOY.md` for deployment and rollback instructions.
 The committed `downloads/fort-terraform-customer.zip` is published directly by
 `build.sh`; builds do not read a Fort source checkout. Regenerate explicitly with
 `python3 scripts/package-terraform.py /path/to/fort` from this directory. The script
-pins source commit `7836c5389ff674a924b8092ae52b83cbf1751864`, reads only a strict
-allowlist of regular tracked blobs and uses fixed ZIP metadata. It bundles both cloud
+pins source commit `f38f17c0c516d0d8dc978d18a7847dc451e8d624`, reads only a strict
+allowlist of regular tracked blobs and uses fixed ZIP metadata. It bundles the AWS, Google Cloud and Oracle Cloud
 modules, sibling shared bootstrap, source operating READMEs and supplemental getting
 started/provenance files. No binaries, live tfvars, state, caches or credentials enter
 the archive. The pinned commit has no root LICENSE; the supplemental `LICENSE` is
@@ -39,4 +39,4 @@ this distinction. Check the committed SHA-256 after regeneration. Review every s
 allowlist change before updating the pin.
 
 Cloud quickstarts retain their original anchors. Full examples and operations live in
-`docs/{aws,gcp}/reference/`; the tool integration reference is in `docs/tools/reference/`.
+`docs/{aws,gcp,oci}/reference/`; the tool integration reference is in `docs/tools/reference/`.

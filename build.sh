@@ -9,14 +9,15 @@ if grep -q 'href="EARLY_ACCESS_URL"' index.html; then
 fi
 
 rm -rf dist
-mkdir -p dist/docs/aws dist/docs/gcp dist/docs/tools dist/docs/understand dist/docs/deploy dist/docs/policy dist/docs/operations
+mkdir -p dist/docs/aws dist/docs/gcp dist/docs/oci dist/docs/tools dist/docs/understand dist/docs/deploy dist/docs/policy dist/docs/operations
 cp index.html 404.html styles.css script.js warden.css warden.js arrivals.js additions.css dist/
 cp docs/index.html docs/docs.css docs/docs.js dist/docs/
-mkdir -p dist/docs/{aws,gcp,tools}/reference dist/downloads
+mkdir -p dist/docs/{aws,gcp,oci,tools}/reference dist/downloads
 cp downloads/fort-terraform-customer.zip downloads/fort-terraform-customer.zip.sha256 dist/downloads/
-for page in aws gcp tools; do cp "docs/$page/reference/index.html" "dist/docs/$page/reference/"; done
+for page in aws gcp oci tools; do cp "docs/$page/reference/index.html" "dist/docs/$page/reference/"; done
 cp docs/aws/index.html dist/docs/aws/
 cp docs/gcp/index.html dist/docs/gcp/
+cp docs/oci/index.html dist/docs/oci/
 cp docs/tools/index.html dist/docs/tools/
 for page in understand deploy policy operations; do cp "docs/$page/index.html" "dist/docs/$page/"; done
 cp -R assets dist/assets

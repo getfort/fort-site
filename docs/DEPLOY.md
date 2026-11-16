@@ -48,7 +48,7 @@ npx wrangler deploy
 `404.html`, the landing-page CSS/JavaScript, `assets/`, and the documentation home and shared assets
 `docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Public guides use
 `index.html` in `docs/understand/`, `docs/deploy/`, `docs/policy/`,
-`docs/operations/`, `docs/aws/`, `docs/gcp/`, and `docs/tools/`, their `reference/` pages, and the two allowlisted Terraform
+`docs/operations/`, `docs/aws/`, `docs/gcp/`, `docs/oci/`, and `docs/tools/`, their `reference/` pages, and the two allowlisted Terraform
 ZIP/checksum files in `downloads/`. Internal `docs/*.md` files
 are excluded. The build adds content hashes to every public CSS/JavaScript file,
 the logo and favicon, including references from the Docs page.
@@ -63,7 +63,7 @@ form URL. Do not include comparison previews in the published output.
 - Open https://getfort.io and https://www.getfort.io and confirm the selected version.
 - Check the logo, CSS and JavaScript load without browser errors.
 - Check `/docs/`, `/docs/understand/`, `/docs/deploy/`, `/docs/policy/`,
-  `/docs/operations/`, `/docs/aws/`, `/docs/gcp/`, `/docs/tools/`, their cross-links and section navigation, the policy and approval links, desktop/mobile navigation, the
+  `/docs/operations/`, `/docs/aws/`, `/docs/gcp/`, `/docs/oci/`, `/docs/tools/`, their cross-links and section navigation, the policy and approval links, desktop/mobile navigation, the
   Warden example and the early-access link.
   Check old `/docs/#policies` and `/docs/#agents` deep links, the shared
   documentation navigation disclosure on mobile, and local page contents.

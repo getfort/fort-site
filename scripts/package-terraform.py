@@ -6,15 +6,16 @@ import sys
 import zipfile
 from pathlib import Path
 
-COMMIT = '7836c5389ff674a924b8092ae52b83cbf1751864'
+COMMIT = 'f38f17c0c516d0d8dc978d18a7847dc451e8d624'
 BASE = 'deploy/terraform/customer/'
 FILES = [BASE + 'README.md']
-for cloud in ('aws', 'gcp'):
+for cloud in ('aws', 'gcp', 'oci'):
     FILES += [BASE + cloud + '/' + name for name in (
         '.terraform.lock.hcl', 'README.md', 'fort.tf', 'main.tf', 'outputs.tf',
         'terraform.tfvars.example', 'variables.tf', 'versions.tf')]
 FILES += [BASE + 'shared/' + name for name in (
-    'bootstrap.py', 'bootstrap.sh.tftpl', 'main.tf', 'outputs.tf', 'variables.tf')]
+    'bootstrap.py', 'bootstrap.sh.tftpl', 'main.tf', 'oci_bootstrap.py', 'oci_secret.py',
+    'outputs.tf', 'variables.tf')]
 repo = Path(sys.argv[1]) if len(sys.argv) == 2 else None
 if repo is None:
     sys.exit('Usage: package-terraform.py /path/to/fort')
@@ -35,11 +36,12 @@ entries['LICENSE'] = Path(__file__).with_name('APACHE-2.0.txt').read_bytes()
 entries['START_HERE.txt'] = f'''Fort early-access Terraform templates
 Source commit: {COMMIT}
 
-Keep aws/, gcp/ and shared/ together. Choose your cloud:
+Keep aws/, gcp/, oci/ and shared/ together. Choose your cloud:
 https://getfort.io/docs/aws/
 https://getfort.io/docs/gcp/
+https://getfort.io/docs/oci/
 
-Inside aws/ or gcp/, copy terraform.tfvars.example to terraform.tfvars.
+Inside aws/, gcp/ or oci/, copy terraform.tfvars.example to terraform.tfvars.
 Replace every placeholder. Read README.md for prerequisites and operations.
 The source README uses deploy/terraform/customer paths: in this download,
 that directory is the extracted fort-terraform-customer directory.
