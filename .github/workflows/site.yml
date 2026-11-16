@@ -138,15 +138,22 @@ jobs:
         if: env.HAS_TOKEN == 'true'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Live site was deployed by fort-site, or was reviewed
+      # Fort's schedule may ask more than once for the same change: if the live site
+      # already serves this exact build, there is nothing to deploy.
+      - name: Already live?
+        id: live
         if: env.HAS_TOKEN == 'true'
+        run: python3 build/verify_live.py --already-live dist https://getfort.io | tee -a "$GITHUB_OUTPUT"
+
+      - name: Live site was deployed by fort-site, or was reviewed
+        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           LIVE_VERSION_REVIEWED: ${{ vars.LIVE_VERSION_REVIEWED }}
         run: ./node_modules/.bin/wrangler deployments list --name fort-web --json | python3 build/live_guard.py
 
       - name: Deploy
-        if: env.HAS_TOKEN == 'true'
+        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FORT_BUILT: ${{ needs.build.outputs.fort_sha }}
@@ -155,5 +162,5 @@ jobs:
           --message "fort-site ${GITHUB_SHA::12} + fort ${FORT_BUILT::12}"
 
       - name: Live site serves this build
-        if: env.HAS_TOKEN == 'true'
+        if: env.HAS_TOKEN == 'true' && steps.live.outputs.already_live != 'yes'
         run: python3 build/verify_live.py dist https://getfort.io

@@ -3,6 +3,7 @@
 
     python3 build/verify_live.py dist [https://getfort.io]
     python3 build/verify_live.py --report dist   # list differences once, never fail
+    python3 build/verify_live.py --already-live dist   # prints already_live=yes|no, one look
 
 Every page, stylesheet, script, asset and download is fetched and compared byte
 for byte; an unknown path must return 404 with the not-found page. Retries for a
@@ -61,9 +62,13 @@ def mismatches(dist, base, explain=False):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a != '--report']
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
     dist = Path(args[0])
     base = (args[1] if len(args) > 1 else 'https://getfort.io').rstrip('/')
+    if '--already-live' in sys.argv:
+        live = not mismatches(dist, base)
+        print(f'already_live={"yes" if live else "no"}')
+        return
     if '--report' in sys.argv:
         problems = mismatches(dist, base, explain=True)
         print('\n'.join(problems) if problems else f'{base} already serves dist/ exactly.')

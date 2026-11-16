@@ -24,6 +24,10 @@ Only GitHub Actions deploys (`.github/workflows/site.yml`), and every deploy is
   contain the commit that asked, so an older commit can never replace a newer one;
 - a pull request here builds and checks, and does not deploy.
 
+Fort's `site-dispatch` also runs on a schedule, because merges by Fort's merge bot start
+no push workflows, so it may ask more than once for one change. A deploy is skipped when
+the live site already serves exactly this build.
+
 Runs queue one at a time. Each deploy's message names both commits, so
 `npx wrangler deployments list --name fort-web` shows what is live.
 
