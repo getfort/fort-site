@@ -1,24 +1,46 @@
-# Deploying Fort
+# Deploying getfort.io
 
-The site is a static page hosted on **Cloudflare Workers Static Assets**, set up the same
-way as Cyclops and Spawning Pool.
+The site is hosted on **Cloudflare Workers Static Assets**.
 
 | | |
 |---|---|
 | Worker name | `fort-web` |
 | Live URLs | https://getfort.io, https://www.getfort.io |
-| First deployed | 2026-10-23 |
 | workers.dev URL | off: with custom domains in `routes`, Wrangler disables `workers.dev` |
-| Cloudflare account | `Mahmoudnashef@gmail.com's Account` (`7be48c17ff1b7cfb0a4b65cae4cb8ad3`) |
+| Cloudflare account | `7be48c17ff1b7cfb0a4b65cae4cb8ad3` |
 | Config | [`wrangler.jsonc`](../wrangler.jsonc) |
 
 It is a Worker, not a Pages project: `wrangler pages deploy` is the wrong command.
 
-## Early-access form
+## How it deploys
 
-The `#access` section links to the existing **Fort early access** Typeform
-(`https://form.typeform.com/to/twrlRIKM`) in a new tab. Edit questions in Typeform.
-To change the form, update the external early-access link in `index.html`.
+Only GitHub Actions deploys (`.github/workflows/site.yml`), and every deploy is
+**this repo's `main` plus Fort's `main`**:
+
+- a push to this repo's `main` builds and deploys;
+- a push to Fort's `main` that changes `docs/site/**` or `deploy/terraform/customer/**`
+  runs Fort's `site-dispatch` workflow, which starts this workflow with the Fort commit.
+  This workflow still builds from Fort's current `main`, and fails if that does not
+  contain the commit that asked, so an older commit can never replace a newer one;
+- a pull request here builds and checks, and does not deploy.
+
+Runs queue one at a time. Each deploy's message names both commits, so
+`npx wrangler deployments list --name fort-web` shows what is live.
+
+### Secrets
+
+Set by the owner in this repo's settings (Settings → Secrets and variables → Actions):
+
+| Secret | What it is |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token from the "Edit Cloudflare Workers" template, limited to the account above and the `getfort.io` zone. |
+| `FORT_READ_TOKEN` | GitHub fine-grained token, resource owner `spawningpool`, repository `spawningpool/fort` only, permission **Contents: Read-only**. |
+
+`CLOUDFLARE_API_TOKEN` is also the deploy switch: without it, runs on `main` build and
+check, and deploy nothing.
+
+Fort's repo holds `FORT_SITE_DISPATCH_TOKEN`: a fine-grained token for
+`spawningpool/fort-site` only, permission **Actions: Read and write**.
 
 ## Domains
 
@@ -26,56 +48,34 @@ To change the form, update the external early-access link in `index.html`.
 `getfort.io` zone. Wrangler creates the DNS records and certificates on deploy; it fails if
 either hostname already has an A, AAAA or CNAME record.
 
-## Deploy
+## What is published
 
-Prerequisites: Node.js/npm and access to the Cloudflare account above. Authenticate
-with `npx wrangler login` if needed; `npx wrangler whoami` checks the active account.
-Do not put authentication tokens in this repository.
-
-Use a branch from current `main`, preview the change, and open a PR with its source.
-Deployment and merging are separate actions. If deployment is authorized before
-merge, mark the PR as already deployed and record the source commit and version ID.
-
-From `sites/fort/`:
-
-```bash
-./build.sh
-for file in script.js warden.js arrivals.js docs/docs.js; do node --check "$file"; done
-npx wrangler deploy
-```
-
-`build.sh` assembles `dist/`, the only directory that gets published: `index.html`,
-`404.html`, the landing-page CSS/JavaScript, `assets/`, and the documentation home and shared assets
-`docs/index.html`, `docs/docs.css`, and `docs/docs.js`. Public guides use
-`index.html` in `docs/understand/`, `docs/deploy/`, `docs/policy/`,
-`docs/operations/`, `docs/aws/`, `docs/gcp/`, `docs/oci/`, and `docs/tools/`, their `reference/` pages, and the two allowlisted Terraform
-ZIP/checksum files in `downloads/`. Internal `docs/*.md` files
-are excluded. The build adds content hashes to every public CSS/JavaScript file,
-the logo and favicon, including references from the Docs page.
+`build/build.py` assembles `dist/`, the only directory that gets published: the landing
+page, `404.html`, the CSS/JavaScript, `assets/`, the docs pages rendered from Fort's
+`docs/site/`, and the Terraform ZIP and checksum packed from Fort's
+`deploy/terraform/customer/`. This file, `docs/MARKDOWN.md` and `PRODUCT.md` stay out.
+The build adds content hashes to every CSS/JavaScript file, the logo and the favicon.
 Unknown paths serve `404.html`.
 
-When adding a public file, add it to the copy list in `build.sh`. Check the production
-title and description, remove preview-only `noindex`, and use the real early-access
-form URL. Do not include comparison previews in the published output.
+When adding a landing-page file, add it to `STATIC` in `build/build.py`. A new docs page
+is a new `docs/site/<page>/index.md` in Fort; it needs no change here.
 
 ## Verify after deployment
 
-- Open https://getfort.io and https://www.getfort.io and confirm the selected version.
+The workflow checks every docs page and the download after each deploy. By hand:
+
+- Open https://getfort.io and https://www.getfort.io.
 - Check the logo, CSS and JavaScript load without browser errors.
-- Check `/docs/`, `/docs/understand/`, `/docs/deploy/`, `/docs/policy/`,
-  `/docs/operations/`, `/docs/aws/`, `/docs/gcp/`, `/docs/oci/`, `/docs/tools/`, their cross-links and section navigation, the policy and approval links, desktop/mobile navigation, the
-  Warden example and the early-access link.
-  Check old `/docs/#policies` and `/docs/#agents` deep links, the shared
-  documentation navigation disclosure on mobile, and local page contents.
-  No form submission is needed to verify its destination.
+- Check `/docs/` and each guide, their cross-links and section navigation, desktop and
+  mobile navigation, the Warden example and the early-access link.
 - Visit an unknown path and confirm an HTTP 404 with the Fort not-found page.
-- Verify `/docs/DEPLOY.md` is not published (HTTP 404).
-- Record the returned Cloudflare version ID and validation results in the PR.
+- Confirm `/downloads/fort-terraform-customer.zip` matches its `.sha256` and that its
+  `START_HERE.txt` names the current Fort `main` commit.
 
 ## Roll back
 
-Run these commands from `sites/fort/`. Inspect the history before rolling back:
-
+A rollback changes the live Worker, not Git, and the next push to either `main` will
+deploy again. Prefer fixing forward on `main`. In an emergency:
 
 ```bash
 npx wrangler deployments list --name fort-web
@@ -85,22 +85,11 @@ npx wrangler deployments list --name fort-web
 npx wrangler rollback --name fort-web
 ```
 
-After rollback, verify the domains again. Rollback changes the live Worker, not Git;
-record it in the PR and reconcile the source before the next deployment.
-
-## Local preview
-
-From the web-pages root (or run the `fort` entry in `.claude/launch.json`):
-
-```bash
-python3 -m http.server 8003 --directory sites/fort
-```
-
-Then open http://localhost:8003.
+Then fix `main` before anything else merges.
 
 ## Copy
 
-The page describes the product in the Fort repo (`docs/SPEC.md` in `~/Work/fort`). Fort
-is pre-launch and its repo is private until launch: don't claim it is generally available or
-that the code is public yet, and keep every control the page names in line with SPEC §3 (v0
+The page describes the product in the Fort repo (`docs/SPEC.md`). Fort is pre-launch
+and its repo is private until launch: don't claim it is generally available or that the
+code is public yet, and keep every control the page names in line with SPEC §3 (v0
 controls only; budgets and spend limits are never the pitch).

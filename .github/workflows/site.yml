@@ -1,0 +1,103 @@
+name: site
+
+# Builds getfort.io from this repo plus Fort's main branch; deploys on main.
+# - push to main here: build and deploy
+# - pull request: build and check only
+# - workflow_dispatch: started by Fort's site-dispatch workflow after a push to Fort
+#   main that changes docs/site/** or deploy/terraform/customer/**. The build still
+#   uses Fort's current main, which must contain the commit that asked, so an older
+#   Fort commit can never replace a newer one.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fort_sha:
+        description: Fort commit that asked for this build (Fort main must contain it)
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('site-pr-{0}', github.ref) || 'fort-web-deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  site:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      # Deploys run only on main, and only once the owner has added the Cloudflare
+      # token: until then every run builds and checks, and deploys nothing.
+      DEPLOY: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out Fort main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: spawningpool/fort
+          ref: main
+          path: fort-src
+          token: ${{ secrets.FORT_READ_TOKEN }}
+          persist-credentials: false
+          sparse-checkout: |
+            docs/site
+            deploy/terraform/customer
+
+      - name: Fort main contains the commit that asked
+        if: github.event_name == 'workflow_dispatch' && inputs.fort_sha != ''
+        env:
+          GH_TOKEN: ${{ secrets.FORT_READ_TOKEN }}
+          FORT_SHA: ${{ inputs.fort_sha }}
+        run: |
+          if ! [[ "$FORT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::fort_sha must be a full commit id"; exit 1
+          fi
+          built=$(git -C fort-src rev-parse HEAD)
+          status=$(gh api "repos/spawningpool/fort/compare/${FORT_SHA}...${built}" --jq .status)
+          if [[ "$status" != identical && "$status" != ahead ]]; then
+            echo "::error::Fort main ($built) does not contain $FORT_SHA (compare: $status)"; exit 1
+          fi
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s build/tests -v
+
+      - name: Build
+        run: |
+          python3 build/build.py --fort fort-src --ref HEAD --out dist | tee build.log
+          { echo '```'; cat build.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "FORT_BUILT=$(git -C fort-src rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Check the output
+        run: |
+          for file in dist/*.js dist/docs/*.js; do node --check "$file"; done
+          for internal in docs/DEPLOY.md docs/MARKDOWN.md PRODUCT.md README.md build; do
+            if [ -e "dist/$internal" ]; then echo "::error::$internal must not be published"; exit 1; fi
+          done
+          (cd dist/downloads && sha256sum -c fort-terraform-customer.zip.sha256)
+
+      - name: Deploys are off
+        if: env.DEPLOY != 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: echo "::notice::Not deployed, because CLOUDFLARE_API_TOKEN is not set in this repo."
+
+      - name: Deploy
+        if: env.DEPLOY == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: >-
+          npx --yes wrangler@4.162.0 deploy
+          --message "fort-site ${GITHUB_SHA::12} + fort ${FORT_BUILT::12}"
+
+      - name: Live site serves this build
+        if: env.DEPLOY == 'true'
+        run: python3 build/verify_live.py dist https://getfort.io

@@ -1,0 +1,58 @@
+"""Pack Fort's customer Terraform templates into the public download.
+
+Every tracked file under deploy/terraform/customer/ at the Fort commit goes in,
+except Fort's own tests and .gitignore. The ZIP is deterministic: the same
+commit always gives the same bytes and checksum.
+"""
+import hashlib
+import zipfile
+from pathlib import Path
+
+BASE = 'deploy/terraform/customer/'
+NAME = 'fort-terraform-customer'
+HERE = Path(__file__).parent
+
+
+class PackageError(Exception):
+    """The customer templates cannot be packed safely."""
+
+
+def shipped(rel):
+    """Whether a path (relative to BASE) belongs in the customer download."""
+    parts = rel.split('/')
+    return 'tests' not in parts[:-1] and parts[-1] != '.gitignore'
+
+
+def contents(fort):
+    """The archive entries (name -> bytes) for one Fort commit."""
+    entries = {}
+    for mode, path in fort.files(BASE):
+        rel = path[len(BASE):]
+        if not shipped(rel):
+            continue
+        if mode != '100644':
+            raise PackageError(f'refusing {path}: mode {mode}, only regular non-executable files ship')
+        entries[rel] = fort.read(path)
+    if 'README.md' not in entries:
+        raise PackageError(f'{BASE}README.md is missing at {fort.sha}')
+    manifest = ''.join(f'{hashlib.sha256(data).hexdigest()}  {name}\n' for name, data in sorted(entries.items()))
+    entries['SOURCE_MANIFEST.sha256'] = manifest.encode()
+    entries['LICENSE'] = (HERE / 'APACHE-2.0.txt').read_bytes()
+    entries['START_HERE.txt'] = (HERE / 'START_HERE.txt').read_text().format(commit=fort.sha).encode()
+    return entries
+
+
+def write(fort, out_dir):
+    """Write the ZIP and its .sha256 into out_dir; returns (checksum, entries)."""
+    entries = contents(fort)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    archive = out_dir / f'{NAME}.zip'
+    with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_STORED) as z:
+        for name, data in sorted(entries.items()):
+            info = zipfile.ZipInfo(f'{NAME}/{name}', (2026, 1, 1, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            z.writestr(info, data)
+    checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+    archive.with_suffix('.zip.sha256').write_text(f'{checksum}  {archive.name}\n')
+    return checksum, entries

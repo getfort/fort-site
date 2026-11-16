@@ -1,0 +1,21 @@
+Fort early-access Terraform templates
+Source commit: {commit}
+
+Keep aws/, gcp/, oci/ and shared/ together. Choose your cloud:
+https://getfort.io/docs/aws/
+https://getfort.io/docs/gcp/
+https://getfort.io/docs/oci/
+
+Inside aws/, gcp/ or oci/, copy terraform.tfvars.example to terraform.tfvars.
+Replace every placeholder. Read README.md for prerequisites and operations.
+The source README uses deploy/terraform/customer paths: in this download,
+that directory is the extracted fort-terraform-customer directory.
+References to the Fort source checkout, tests and qualified binaries require
+separately supplied source/builds; those are not bundled here.
+
+No binaries or credentials are included. Company OIDC sign-in is required.
+Do not place private keys, client secrets or live state in shared files.
+Source files are included unchanged; SOURCE_MANIFEST.sha256 lists those blobs only.
+START_HERE and SOURCE_MANIFEST are packaging additions. LICENSE is supplemental
+standard Apache-2.0 text from https://www.apache.org/licenses/LICENSE-2.0.txt;
+the source commit has no tracked root LICENSE. Fort declares Apache-2.0 terms.

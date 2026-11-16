@@ -1,6 +1,6 @@
 {
-  // Fort landing page — static site on Cloudflare Workers Static Assets.
-  // Deploy from this folder with: ./build.sh && npx wrangler deploy
+  // getfort.io — static site on Cloudflare Workers Static Assets.
+  // Deployed only by .github/workflows/site.yml after build/build.py fills dist/.
   // This is a Worker, not a Pages project. See docs/DEPLOY.md.
   "name": "fort-web",
   "compatibility_date": "2026-10-23",

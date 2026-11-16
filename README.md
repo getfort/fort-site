@@ -1,42 +1,53 @@
-# Fort landing page
+# getfort.io
 
-Fort's illustrated, text-led landing page. Plain static HTML, CSS and JavaScript,
-hosted on Cloudflare Workers Static Assets at https://getfort.io.
+The Fort website: its look and its build. Plain static HTML, CSS and JavaScript,
+hosted on Cloudflare Workers Static Assets (Worker `fort-web`) at https://getfort.io.
 
-- `index.html`: the selected shorter-copy landing page, with inline vector forts and agents.
-- `styles.css`: off-white, sage and forest-green theme; responsive layouts and reduced-motion support.
-- `script.js`: shared mobile navigation.
-- `warden.js` / `warden.css`: the interactive sandbox, agent and Warden example.
-- `arrivals.js`: the hero agent enters the fort and remains inside.
-- `additions.css`: problem statement, human oversight and audit sections.
-- `docs/index.html`: task-oriented documentation home at `/docs/`.
-- `docs/understand/`, `docs/deploy/`, `docs/policy/`, `docs/operations/`: focused concepts, deployment choices, policy/approvals and operations reference. Original `/docs/#section` links route to these pages with linked fallbacks.
-- `docs/docs.css`, `docs/docs.js`: shared responsive documentation navigation, local contents and presentation. Markdown files remain internal and excluded from publication.
-- `docs/tools/index.html`: practical agent/tool-server separation, managed-container deployment, client setup and first-call verification.
-- `docs/aws/index.html`, `docs/gcp/index.html`, `docs/oci/index.html`: Terraform deployment guides for early-access customer installations; keep examples aligned with Fort’s customer modules.
-- `assets/`: the existing Fort logo and favicon.
-- `404.html`: matching not-found page.
-- `build.sh`: assembles the published `dist/` and adds content hashes to CSS and JavaScript.
+**This repo has no docs text and no Terraform download of its own.** Both come from
+the Fort repo (`spawningpool/fort`) at the exact commit being built:
 
-Early-access buttons lead to the existing Fort Typeform (`twrlRIKM`).
+- the docs pages at `/docs/` are rendered from Markdown in Fort's `docs/site/`;
+- `/downloads/fort-terraform-customer.zip` (and its `.sha256`) is packed from Fort's
+  `deploy/terraform/customer/`.
+
+The live site is always Fort `main` plus this repo's `main`. A push to either deploys
+(see `docs/DEPLOY.md`); nothing is deployed from a laptop or from an older commit.
+
+## What is here
+
+- `index.html`, `404.html`: the landing page and the not-found page.
+- `styles.css`, `script.js`, `warden.css`, `warden.js`, `arrivals.js`, `additions.css`:
+  landing-page styles and behaviour (theme, navigation, the Warden example, the hero arrival).
+- `docs/docs.css`, `docs/docs.js`: docs layout, navigation and contents.
+- `assets/`: logo and favicon.
+- `build/`: the build.
+  - `build.py`: assembles `dist/`, the only directory that is published.
+  - `docs-page.html`: the shared docs page frame (header, sidebar slot, footer).
+  - `site_markdown.py`, `docs_pages.py`: render Fort's docs Markdown into that frame.
+    The Markdown syntax is described in `docs/MARKDOWN.md`.
+  - `package_terraform.py`: packs the Terraform ZIP. Every tracked file under
+    `deploy/terraform/customer/` goes in, except Fort's own `tests/` and `.gitignore`;
+    only regular, non-executable files are accepted. It adds `SOURCE_MANIFEST.sha256`
+    (hashes of the packed source files), `START_HERE.txt` (records the Fort commit) and
+    `LICENSE` (standard Apache-2.0 text, `build/APACHE-2.0.txt`). The ZIP is
+    deterministic: one commit always gives the same bytes.
+  - `tests/`: unit tests (`python3 -m unittest discover -s build/tests`).
+- `.github/workflows/site.yml`: build on every PR, build and deploy on `main`.
+- `wrangler.jsonc`: the Worker and its domains.
+- `PRODUCT.md`: who the site is for and what it says.
+
+Early-access buttons lead to the Fort Typeform (`twrlRIKM`).
 The Warden panel is an illustrative example, not a connected environment.
 
-See `docs/DEPLOY.md` for deployment and rollback instructions.
+## Build and preview locally
 
-## Terraform download
+Needs Python 3.10+ and a Fort checkout.
 
-The committed `downloads/fort-terraform-customer.zip` is published directly by
-`build.sh`; builds do not read a Fort source checkout. Regenerate explicitly with
-`python3 scripts/package-terraform.py /path/to/fort` from this directory. The script
-pins source commit `f38f17c0c516d0d8dc978d18a7847dc451e8d624`, reads only a strict
-allowlist of regular tracked blobs and uses fixed ZIP metadata. It bundles the AWS, Google Cloud and Oracle Cloud
-modules, sibling shared bootstrap, source operating READMEs and supplemental getting
-started/provenance files. No binaries, live tfvars, state, caches or credentials enter
-the archive. The pinned commit has no root LICENSE; the supplemental `LICENSE` is
-the standard text from Apache, stored in `scripts/APACHE-2.0.txt`. The archive’s
-source manifest covers only unchanged tracked blobs, while `START_HERE.txt` records
-this distinction. Check the committed SHA-256 after regeneration. Review every source and
-allowlist change before updating the pin.
+```bash
+python3 build/build.py --fort ~/Work/fort --ref origin/main
+python3 -m http.server 8003 --directory dist
+```
 
-Cloud quickstarts retain their original anchors. Full examples and operations live in
-`docs/{aws,gcp,oci}/reference/`; the tool integration reference is in `docs/tools/reference/`.
+`--ref` takes any Fort commit, branch or tag. To preview docs edits, commit them on a
+Fort branch and pass that branch. The build reads committed files only, never the
+Fort working tree.
