@@ -326,26 +326,11 @@ class EndToEnd(unittest.TestCase):
             self.assertIn(f'<loc>{url}</loc>', sitemap)
         headers = (out / '_headers').read_text()
         self.assertIn('/docs/gcp/\n  Link: </sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; '
-                      'type="text/plain", </docs/gcp/index.md>; rel="alternate"; type="text/markdown", ', headers)
-        self.assertEqual((out / 'agents.md').read_text(), llms)
-        entries = json.loads((out / '.well-known/ard.json').read_text())['entries']
-        for entry in entries:
-            self.assertRegex(entry['identifier'], r'^urn:air:getfort\.io:[a-z0-9/-]+$')
-            self.assertTrue((out / entry['url'][len('https://getfort.io/'):]).is_file(), entry['url'])
+                      'type="text/plain", </docs/gcp/index.md>; rel="alternate"; type="text/markdown"\n', headers)
         for page in ('index.html', 'docs/gcp/index.html'):
             self.assertIn('<link rel="alternate" type="text/markdown" href="index.md">', (out / page).read_text())
         json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',
                              (out / 'index.html').read_text(), re.S).group(1))
-
-    def test_skill_index_names_the_published_skill(self):
-        import hashlib
-        out = self.built()[0]
-        index = json.loads((out / '.well-known/agent-skills/index.json').read_text())
-        skill = index['skills'][0]
-        published = (out / skill['url'].lstrip('/')).read_bytes()
-        self.assertEqual(skill['digest'], 'sha256:' + hashlib.sha256(published).hexdigest())
-        self.assertIn(b'- [GCP](https://getfort.io/docs/gcp/index.md): D', published)
-        self.assertNotIn(b'{{', published)
 
     def test_tree_build_matches_git_build(self):
         import shutil

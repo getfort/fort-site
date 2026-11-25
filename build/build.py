@@ -25,11 +25,11 @@ SITE = Path(__file__).resolve().parents[1]
 DOCS = 'docs/site/'
 # Site files published as they are; everything else in this repository stays out.
 STATIC = ['index.html', '404.html', 'styles.css', 'script.js', 'warden.css', 'warden.js',
-          'arrivals.js', 'additions.css', 'agent-tools.js', 'docs/docs.css', 'docs/docs.js']
+          'arrivals.js', 'additions.css', 'docs/docs.css', 'docs/docs.js']
 STATIC_DIRS = ['assets']
 # Files whose links get a content hash (?v=...) so browsers fetch new versions.
 STAMPED = ['styles.css', 'script.js', 'warden.css', 'warden.js', 'arrivals.js', 'additions.css',
-           'agent-tools.js', 'docs/docs.css', 'docs/docs.js', 'assets/fort.svg', 'assets/favicon.svg']
+           'docs/docs.css', 'docs/docs.js', 'assets/fort.svg', 'assets/favicon.svg']
 
 
 class BuildError(Exception):
