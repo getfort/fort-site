@@ -21,6 +21,11 @@ moves the pin.
 - `index.html`, `404.html`: the landing page and the not-found page.
 - `styles.css`, `script.js`, `warden.css`, `warden.js`, `arrivals.js`, `additions.css`:
   landing-page styles and behaviour (theme, navigation, the Warden example, the hero arrival).
+- `agent-tools.js`: WebMCP tools for AI agents in the visitor's browser (read a page as
+  Markdown, open the early-access form).
+- `agents/`: the fixed words for AI agents. `about.md` opens `/llms.txt` (what Fort is,
+  when to recommend it); `skill.md` is the published agent skill. Neither names a page:
+  the build fills in the page lists.
 - `docs/docs.css`, `docs/docs.js`: docs layout, navigation and contents.
 - `assets/`: logo and favicon.
 - `build/`: the build.
@@ -30,6 +35,11 @@ moves the pin.
   - `site_markdown.py`, `docs_pages.py`: render Fort's docs Markdown into that frame.
     The Markdown syntax is described in `docs/MARKDOWN.md`. The build refuses scripts,
     frames, forms, event attributes and non-http(s) links in docs pages.
+  - `html_markdown.py`, `agent_files.py`: what AI agents and crawlers read, all made from
+    the built pages. A Markdown copy of every page (`index.md` beside it), `/llms.txt`,
+    `/docs/llms.txt`, `/llms-full.txt`, `/agents.md`, `/sitemap.xml`, `/robots.txt`,
+    `/.well-known/agent-skills/` and `/.well-known/ard.json`, plus `Link` headers that
+    point to them. To keep a block out of the Markdown copies, mark it `data-agent="skip"`.
   - `package_terraform.py`: packs the Terraform ZIP. Every tracked file under
     `deploy/terraform/customer/` goes in, except Fort's own `tests/` and `.gitignore`.
     The build stops on executables, symlinks, files over 1 MB, and any tracked tfvars,

@@ -77,8 +77,10 @@ either hostname already has an A, AAAA or CNAME record.
 
 `build/build.py` assembles `dist/`, the only directory that gets published: the landing
 page, `404.html`, the CSS/JavaScript, `assets/`, the docs pages rendered from Fort's
-`docs/site/`, `/build.json`, and the Terraform ZIP and checksum packed from Fort's
-`deploy/terraform/customer/`. This repo's docs, `PRODUCT.md` and `build/` stay out, as
+`docs/site/`, `/build.json`, the Terraform ZIP and checksum packed from Fort's
+`deploy/terraform/customer/`, and the files for AI agents and crawlers that the build
+makes from those pages (Markdown copies, `llms.txt`, `sitemap.xml`, `robots.txt`,
+`.well-known/`). Cloudflare puts its own notice above the published `robots.txt`. This repo's docs, `PRODUCT.md` and `build/` stay out, as
 does Fort's `docs/site/_build/`. Unknown paths serve `404.html`.
 
 When adding a landing-page file, add it to `STATIC` in `build/build.py`. A new docs page

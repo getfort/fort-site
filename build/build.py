@@ -15,20 +15,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+import agent_files
 from docs_pages import page
 from fort_source import FortCommit, FortSourceError, FortTree
 from package_terraform import PackageError, write as write_package
-from site_markdown import MarkdownError
+from site_markdown import MarkdownError, front_matter
 
 SITE = Path(__file__).resolve().parents[1]
 DOCS = 'docs/site/'
 # Site files published as they are; everything else in this repository stays out.
 STATIC = ['index.html', '404.html', 'styles.css', 'script.js', 'warden.css', 'warden.js',
-          'arrivals.js', 'additions.css', 'docs/docs.css', 'docs/docs.js']
+          'arrivals.js', 'additions.css', 'agent-tools.js', 'docs/docs.css', 'docs/docs.js']
 STATIC_DIRS = ['assets']
 # Files whose links get a content hash (?v=...) so browsers fetch new versions.
 STAMPED = ['styles.css', 'script.js', 'warden.css', 'warden.js', 'arrivals.js', 'additions.css',
-           'docs/docs.css', 'docs/docs.js', 'assets/fort.svg', 'assets/favicon.svg']
+           'agent-tools.js', 'docs/docs.css', 'docs/docs.js', 'assets/fort.svg', 'assets/favicon.svg']
 
 
 class BuildError(Exception):
@@ -89,9 +90,19 @@ def build(fort_repo, ref, out, tree_sha=None):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(rendered)
     checksum, entries = write_package(fort, out / 'downloads')
+    # Markdown twins, llms.txt, sitemap and the other files agents look for, made from the
+    # pages above before their asset links are stamped.
+    docs_meta = {}
+    for path, source in pages.items():
+        meta = front_matter(source)[0]
+        docs_meta[path] = (meta['title'], meta['description'])
+    try:
+        published = agent_files.write(out, docs_meta, sidebar)
+    except ValueError as err:
+        raise BuildError(str(err)) from err
     stamp(out)
     # Workers Static Assets reads _headers and does not publish it.
-    (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n')
+    (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n' + agent_files.headers(published))
     # /build.json names what is live: the Fort and fort-site commits, and a digest of every
     # published path and its content.
     record = {

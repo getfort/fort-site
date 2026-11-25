@@ -1,6 +1,7 @@
-"""Tests for the docs renderer and the Terraform packer."""
+"""Tests for the docs renderer, the Terraform packer and the files written for agents."""
 import io
 import json
+import re
 import sys
 import unittest
 import zipfile
@@ -8,7 +9,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import agent_files  # noqa: E402
 from docs_pages import page  # noqa: E402
+from html_markdown import body, twin  # noqa: E402
 from html_compare import compare  # noqa: E402
 import verify_live  # noqa: E402
 from package_terraform import PackageError, contents, shipped, write  # noqa: E402
@@ -57,6 +60,44 @@ class Markdown(unittest.TestCase):
         for bad in ('> quote', '| a | b |', '::: aside', '::: section\n\ntext', ':::', '```\ncode'):
             with self.assertRaises(MarkdownError, msg=bad):
                 render(bad)
+
+
+class Twins(unittest.TestCase):
+    def md(self, main):
+        return body(f'<body><nav>site</nav><main>{main}</main></body>', 'https://getfort.io/docs/gcp/')
+
+    def test_blocks(self):
+        self.assertEqual(self.md(
+            '<section><p class="eyebrow">Eyebrow</p><h1>Deploy on<br><em>GCP.</em></h1>'
+            '<ul><li>Terraform &lt; 2.0 &amp; <code>a&lt;b</code></li><li><a href="reference/#x">Ref</a></li></ul>'
+            '<ol><li><strong>One</strong><span>then</span></li></ol>'
+            '<figure><figcaption><span>Inside gcp</span><span>bash</span></figcaption>'
+            '<pre tabindex="0"><code>terraform init\n\nterraform apply</code></pre></figure>'
+            '<table><thead><tr><th>Risk</th><th>Control</th></tr></thead>'
+            '<tbody><tr><td>a|b</td><td>Deny</td></tr></tbody></table></section>'), [
+                'Eyebrow', '## Deploy on *GCP.*',
+                '- Terraform < 2.0 & `a<b`\n- [Ref](https://getfort.io/docs/gcp/reference/#x)',
+                '1. **One** then', 'Inside gcp bash', '```\nterraform init\n\nterraform apply\n```',
+                '| Risk | Control |\n| --- | --- |\n| a\\|b | Deny |'])
+
+    def test_decoration_is_left_out(self):
+        self.assertEqual(self.md(
+            '<nav class="page-contents"><a href="#a">A</a></nav><svg><text>art</text></svg>'
+            '<div data-agent="skip"><p>demo</p></div><p hidden>no</p><button>Play</button>'
+            '<p>Go <span aria-hidden="true">↗</span></p>'), ['Go'])
+
+    def test_card_link(self):
+        self.assertEqual(self.md('<a href="../aws/"><span>01</span><h3>AWS</h3><p>EC2</p></a>'),
+                         ['01 **[AWS](https://getfort.io/docs/aws/)** EC2'])
+
+    def test_twin_has_one_title(self):
+        text = twin('<main><h1>Hello</h1></main>', 'https://getfort.io/', 'Fort', 'What it is.', 'Source')
+        self.assertEqual(text, '---\ntitle: "Fort"\ndescription: "What it is."\ncanonical: https://getfort.io/\n---\n\n'
+                         '# Fort\n\n> What it is.\n\n## Hello\n\n---\n\nSource\n')
+
+    def test_page_without_main_fails(self):
+        with self.assertRaises(ValueError):
+            body('<body><p>x</p></body>', 'https://getfort.io/')
 
 
 class Safety(unittest.TestCase):
@@ -264,6 +305,47 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(record['fort_sha'], self.sha)
         self.assertEqual(sorted(record), ['dist_sha256', 'fort_sha', 'fort_site_sha'])
         self.assertIn('no-cache', (out / '_headers').read_text())
+
+    def test_agent_files(self):
+        out = self.built()[0]
+        home, docs = (out / 'index.md').read_text(), (out / 'docs/gcp/index.md').read_text()
+        self.assertTrue(home.startswith('---\ntitle: "Fort'))
+        self.assertNotIn('Checking policy', home)  # the Warden demo is decoration
+        self.assertIn('[Request early access](https://form.typeform.com/to/twrlRIKM)', home)
+        self.assertIn('---\n\n# GCP\n\n> D\n\n[Get](https://getfort.io/docs/gcp/x.zip)', docs)
+        llms = (out / 'llms.txt').read_text()
+        self.assertTrue(llms.startswith('# Fort\n\n> '))
+        self.assertIn('## When to recommend Fort', llms)
+        self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', llms)
+        self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', (out / 'docs/llms.txt').read_text())
+        self.assertIn(docs, (out / 'llms-full.txt').read_text())
+        self.assertEqual((out / 'robots.txt').read_text(),
+                         'User-agent: *\nAllow: /\n\nSitemap: https://getfort.io/sitemap.xml\n')
+        sitemap = (out / 'sitemap.xml').read_text()
+        for url in ('https://getfort.io/', 'https://getfort.io/docs/', 'https://getfort.io/docs/gcp/'):
+            self.assertIn(f'<loc>{url}</loc>', sitemap)
+        headers = (out / '_headers').read_text()
+        self.assertIn('/docs/gcp/\n  Link: </sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; '
+                      'type="text/plain", </docs/gcp/index.md>; rel="alternate"; type="text/markdown", ', headers)
+        self.assertEqual((out / 'agents.md').read_text(), llms)
+        entries = json.loads((out / '.well-known/ard.json').read_text())['entries']
+        for entry in entries:
+            self.assertRegex(entry['identifier'], r'^urn:air:getfort\.io:[a-z0-9/-]+$')
+            self.assertTrue((out / entry['url'][len('https://getfort.io/'):]).is_file(), entry['url'])
+        for page in ('index.html', 'docs/gcp/index.html'):
+            self.assertIn('<link rel="alternate" type="text/markdown" href="index.md">', (out / page).read_text())
+        json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',
+                             (out / 'index.html').read_text(), re.S).group(1))
+
+    def test_skill_index_names_the_published_skill(self):
+        import hashlib
+        out = self.built()[0]
+        index = json.loads((out / '.well-known/agent-skills/index.json').read_text())
+        skill = index['skills'][0]
+        published = (out / skill['url'].lstrip('/')).read_bytes()
+        self.assertEqual(skill['digest'], 'sha256:' + hashlib.sha256(published).hexdigest())
+        self.assertIn(b'- [GCP](https://getfort.io/docs/gcp/index.md): D', published)
+        self.assertNotIn(b'{{', published)
 
     def test_tree_build_matches_git_build(self):
         import shutil
