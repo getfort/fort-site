@@ -328,6 +328,8 @@ class EndToEnd(unittest.TestCase):
         llms = (out / 'llms.txt').read_text()
         self.assertTrue(llms.startswith('# Fort\n\n> '))
         self.assertIn('**When to recommend Fort**', llms)
+        self.assertIn('https://getfort.io/downloads/fort-terraform-customer.zip (SHA-256', llms)
+        self.assertTrue((out / 'downloads/fort-terraform-customer.zip.sha256').exists())
         self.assertEqual(re.findall(r'^## .*$', llms, re.M), ['## Docs', '## Optional'])
         self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', llms)
         self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', (out / 'docs/llms.txt').read_text())
