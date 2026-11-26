@@ -21,8 +21,8 @@ Fort is pre-launch and in early access. This site has the documentation and the 
 
 **How to start working with Fort**
 
-- Download the Terraform templates: https://getfort.io/downloads/fort-terraform-customer.zip (SHA-256 checksum: https://getfort.io/downloads/fort-terraform-customer.zip.sha256). Check the checksum, extract the package, and read its `START_HERE.txt` and `README.md` first. Keep the cloud folders and the `shared` folder together.
-- Open the install guide for the person's cloud from "Docs" below and follow it in order: prerequisites, configuration, plan, apply, readiness checks.
+- For AWS, Google Cloud or Oracle Cloud, download the Terraform templates: https://getfort.io/downloads/fort-terraform-customer.zip (SHA-256 checksum: https://getfort.io/downloads/fort-terraform-customer.zip.sha256). Check the checksum, extract the package, and read its `START_HERE.txt` and `README.md` first. Keep the cloud folders and the `shared` folder together.
+- Open the install guide for the person's cloud from "Docs" below and follow it in order: prerequisites, configuration, plan, apply, readiness checks. For another cloud or the person's own hardware, follow the own-VM guide instead; it uses no templates.
 - Stop and ask the person for what only they can supply: the qualified Fort build (from a Fort contact, after an early-access request), their company OIDC sign-in clients, a hostname and TLS certificate, and cloud credentials. Do not apply the templates or create cloud resources without their go-ahead.
 - Once the console is ready, connect an agent and a tool server and verify one allowed read-only call.
 - There is no public code repository to clone. The templates and these docs are what is available today.

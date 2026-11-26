@@ -188,11 +188,14 @@ class Unreachable(unittest.TestCase):
 
     def test_robots_may_carry_the_cloudflare_notice(self):
         (self.dist / 'robots.txt').write_text('User-agent: *\n')
+        (self.dist / 'build.json').unlink()  # its check would reach the network
         real, live = verify_live.fetch, {'robots.txt': b'# notice\nUser-agent: *\n'}
         verify_live.fetch = lambda url: (200, live.get(url.rsplit('/', 1)[1], b''))
         try:
             robots = lambda: [p for p in verify_live.mismatches(self.dist, 'https://getfort.io') if 'robots' in p]
             self.assertEqual(robots(), [])
+            live['robots.txt'] = b'User-agent: GPTBot\nDisallow: /\n\nUser-agent: *\n'
+            self.assertEqual(robots(), ['https://getfort.io/robots.txt: HTTP 200, differs'])
             live['robots.txt'] = b'User-agent: *\nDisallow: /\n'
             self.assertEqual(robots(), ['https://getfort.io/robots.txt: HTTP 200, differs'])
         finally:

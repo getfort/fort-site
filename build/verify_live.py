@@ -9,7 +9,7 @@ for byte; an unknown path must return 404 with the not-found page. Retries for a
 while, since a new deployment takes a few seconds to reach every edge.
 The one thing removed before comparing is the Cloudflare Web Analytics beacon,
 which Cloudflare adds to some HTML responses itself. robots.txt may also carry a notice
-Cloudflare puts above the published file; it matches when it ends with the published one.
+Cloudflare puts above the published file; comment lines above it are allowed, rules are not.
 """
 import http.client
 import re
@@ -52,6 +52,18 @@ def url_for(base, rel):
     return f'{base}/{rel}'
 
 
+def notice_only(live, mine):
+    """True when live is mine with only comment lines above it.
+
+    Cloudflare puts its own notice above the published robots.txt. A rule added there
+    (a Disallow for AI crawlers, say) changes what the site allows, so it is a difference.
+    """
+    if not live.endswith(mine):
+        return False
+    above = live[:len(live) - len(mine)].splitlines()
+    return all(not line.strip() or line.lstrip().startswith(b'#') for line in above)
+
+
 def mismatches(dist, base, explain=False):
     problems = []
     for path in sorted(p for p in dist.rglob('*') if p.is_file()):
@@ -60,8 +72,8 @@ def mismatches(dist, base, explain=False):
             continue
         status, body = fetch(url_for(base, rel))
         mine = path.read_bytes()
-        if rel == 'robots.txt' and status == 200 and body.endswith(mine):
-            continue  # Cloudflare puts its own notice above the published file
+        if rel == 'robots.txt' and status == 200 and notice_only(body, mine):
+            continue
         if status != 200 or body != mine:
             note = 'differs' if status == 200 else 'unreachable' if status == 0 else 'not served'
             if explain and status == 200 and rel.endswith('.html'):

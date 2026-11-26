@@ -22,6 +22,7 @@ ORIGIN = 'https://getfort.io/'
 LINKS = ('</sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; type="text/plain", '
          '<{twin}>; rel="alternate"; type="text/markdown"')
 
+MAX_RULES = 100
 TEXT_FILES = ('llms.txt', 'docs/llms.txt', 'llms-full.txt', 'robots.txt')
 
 
@@ -90,6 +91,8 @@ def headers(pages):
         rules.append(f'/{page.path}index.md\n  Content-Type: text/markdown; charset=utf-8\n')
     for name in TEXT_FILES:
         rules.append(f'/{name}\n  Content-Type: text/plain; charset=utf-8\n')
+    if len(rules) + 1 > MAX_RULES:  # + the build.json rule build.py writes
+        raise ValueError(f'_headers would have {len(rules) + 1} rules; Cloudflare reads at most {MAX_RULES}')
     return ''.join(rules)
 
 

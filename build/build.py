@@ -98,11 +98,12 @@ def build(fort_repo, ref, out, tree_sha=None):
         docs_meta[path] = (meta['title'], meta['description'])
     try:
         published = agent_files.write(out, docs_meta, sidebar)
+        header_rules = agent_files.headers(published)
     except ValueError as err:
         raise BuildError(str(err)) from err
     stamp(out)
     # Workers Static Assets reads _headers and does not publish it.
-    (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n' + agent_files.headers(published))
+    (out / '_headers').write_text('/build.json\n  Cache-Control: no-cache\n' + header_rules)
     # /build.json names what is live: the Fort and fort-site commits, and a digest of every
     # published path and its content.
     record = {
