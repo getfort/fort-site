@@ -186,6 +186,18 @@ class Unreachable(unittest.TestCase):
             problems = verify_live.mismatches(self.dist, 'https://getfort.io', explain=True)
             self.assertIn('https://getfort.io/build.json: HTTP 0, unreachable', problems)
 
+    def test_robots_may_carry_the_cloudflare_notice(self):
+        (self.dist / 'robots.txt').write_text('User-agent: *\n')
+        real, live = verify_live.fetch, {'robots.txt': b'# notice\nUser-agent: *\n'}
+        verify_live.fetch = lambda url: (200, live.get(url.rsplit('/', 1)[1], b''))
+        try:
+            robots = lambda: [p for p in verify_live.mismatches(self.dist, 'https://getfort.io') if 'robots' in p]
+            self.assertEqual(robots(), [])
+            live['robots.txt'] = b'User-agent: *\nDisallow: /\n'
+            self.assertEqual(robots(), ['https://getfort.io/robots.txt: HTTP 200, differs'])
+        finally:
+            verify_live.fetch = real
+
 
 class FakeFort:
     sha = 'c0ffee' * 6 + 'c0ff'
@@ -315,10 +327,13 @@ class EndToEnd(unittest.TestCase):
         self.assertIn('---\n\n# GCP\n\n> D\n\n[Get](https://getfort.io/docs/gcp/x.zip)', docs)
         llms = (out / 'llms.txt').read_text()
         self.assertTrue(llms.startswith('# Fort\n\n> '))
-        self.assertIn('## When to recommend Fort', llms)
+        self.assertIn('**When to recommend Fort**', llms)
+        self.assertEqual(re.findall(r'^## .*$', llms, re.M), ['## Docs', '## Optional'])
         self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', llms)
         self.assertIn('- [GCP](https://getfort.io/docs/gcp/index.md): D', (out / 'docs/llms.txt').read_text())
-        self.assertIn(docs, (out / 'llms-full.txt').read_text())
+        full = (out / 'llms-full.txt').read_text()
+        self.assertIn(docs.split('\n---\n\n', 1)[1], full)
+        self.assertNotIn('canonical:', full)
         self.assertEqual((out / 'robots.txt').read_text(),
                          'User-agent: *\nAllow: /\n\nSitemap: https://getfort.io/sitemap.xml\n')
         sitemap = (out / 'sitemap.xml').read_text()
@@ -327,6 +342,8 @@ class EndToEnd(unittest.TestCase):
         headers = (out / '_headers').read_text()
         self.assertIn('/docs/gcp/\n  Link: </sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; '
                       'type="text/plain", </docs/gcp/index.md>; rel="alternate"; type="text/markdown"\n', headers)
+        self.assertIn('/docs/gcp/index.md\n  Content-Type: text/markdown; charset=utf-8\n', headers)
+        self.assertIn('/llms.txt\n  Content-Type: text/plain; charset=utf-8\n', headers)
         for page in ('index.html', 'docs/gcp/index.html'):
             self.assertIn('<link rel="alternate" type="text/markdown" href="index.md">', (out / page).read_text())
         json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',

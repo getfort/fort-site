@@ -199,10 +199,10 @@ def body(page_html, url):
     return Writer(url).blocks(main)
 
 
-def twin(page_html, url, title, description, footer):
+def twin(page_html, url, title, description, footer, heading=None):
     """The Markdown twin of one page: front matter, title, summary, content, then where it came from."""
     title, description = squeeze(title), squeeze(description)
     front = '\n'.join(['---', f'title: {json.dumps(title, ensure_ascii=False)}',
                        f'description: {json.dumps(description, ensure_ascii=False)}', f'canonical: {url}', '---'])
-    parts = [f'# {title}', f'> {description}', *body(page_html, url), '---', footer]
+    parts = [f'# {squeeze(heading or title)}', f'> {description}', *body(page_html, url), '---', footer]
     return front + '\n\n' + '\n\n'.join(parts) + '\n'

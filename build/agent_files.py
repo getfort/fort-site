@@ -22,6 +22,8 @@ ORIGIN = 'https://getfort.io/'
 LINKS = ('</sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; type="text/plain", '
          '<{twin}>; rel="alternate"; type="text/markdown"')
 
+TEXT_FILES = ('llms.txt', 'docs/llms.txt', 'llms-full.txt', 'robots.txt')
+
 
 class Page:
     """One published page: `path` is '' for the home page, 'docs/gcp/' for a docs page."""
@@ -83,6 +85,11 @@ def headers(pages):
     for page in pages:
         link = LINKS.format(twin='/' + page.path + 'index.md')
         rules.append(f'/{page.path}\n  Link: {link}\n')
+    # These files have no <meta charset>, so the header has to say they are UTF-8.
+    for page in pages:
+        rules.append(f'/{page.path}index.md\n  Content-Type: text/markdown; charset=utf-8\n')
+    for name in TEXT_FILES:
+        rules.append(f'/{name}\n  Content-Type: text/plain; charset=utf-8\n')
     return ''.join(rules)
 
 
@@ -100,14 +107,14 @@ def write(out, docs_meta, sidebar):
     twins = []
     for page in pages:
         text = twin((out / page.path / 'index.html').read_text(), page.url, page.title,
-                    page.description, f'Source: {page.url} · {footer}')
+                    page.description, f'Source: {page.url} · {footer}', heading=page.name)
         (out / page.path / 'index.md').write_text(text)
-        twins.append(text)
+        twins.append(text.split('\n---\n\n', 1)[1])  # without the front matter
     about = (SITE / 'agents' / 'about.md').read_text()
     files = {
         'llms.txt': llms(about, home, docs),
         'docs/llms.txt': docs_llms(docs),
-        'llms-full.txt': about.strip() + '\n\n---\n\n' + '\n---\n\n'.join(twins),
+        'llms-full.txt': about.strip() + '\n\n---\n\n' + '\n'.join(twins),
         'sitemap.xml': sitemap(pages),
         'robots.txt': f'User-agent: *\nAllow: /\n\nSitemap: {ORIGIN}sitemap.xml\n',
     }

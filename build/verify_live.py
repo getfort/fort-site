@@ -8,7 +8,8 @@ Every page, stylesheet, script, asset and download is fetched and compared byte
 for byte; an unknown path must return 404 with the not-found page. Retries for a
 while, since a new deployment takes a few seconds to reach every edge.
 The one thing removed before comparing is the Cloudflare Web Analytics beacon,
-which Cloudflare adds to some HTML responses itself.
+which Cloudflare adds to some HTML responses itself. robots.txt may also carry a notice
+Cloudflare puts above the published file; it matches when it ends with the published one.
 """
 import http.client
 import re
@@ -59,6 +60,8 @@ def mismatches(dist, base, explain=False):
             continue
         status, body = fetch(url_for(base, rel))
         mine = path.read_bytes()
+        if rel == 'robots.txt' and status == 200 and body.endswith(mine):
+            continue  # Cloudflare puts its own notice above the published file
         if status != 200 or body != mine:
             note = 'differs' if status == 200 else 'unreachable' if status == 0 else 'not served'
             if explain and status == 200 and rel.endswith('.html'):
