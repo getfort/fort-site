@@ -239,7 +239,8 @@ SAFE_TAGS = {'a', 'aside', 'b', 'br', 'code', 'details', 'div', 'em', 'figcaptio
              'h1', 'h2', 'h3', 'li', 'nav', 'ol', 'p', 'pre', 'section', 'small', 'span',
              'strong', 'summary', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'ul'}
 SAFE_ATTRS = {'class', 'id', 'href', 'download', 'target', 'rel', 'aria-current', 'aria-hidden',
-              'aria-label', 'role', 'tabindex', 'open'}
+              'aria-label', 'role', 'tabindex', 'open',
+              'data-agent'}  # data-agent="skip" keeps a block out of the Markdown copies
 SAFE_SCHEMES = {'http', 'https'}
 
 

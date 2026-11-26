@@ -85,6 +85,11 @@ class Twins(unittest.TestCase):
             '<nav class="page-contents"><a href="#a">A</a></nav><svg><text>art</text></svg>'
             '<div data-agent="skip"><p>demo</p></div><p hidden>no</p><button>Play</button>'
             '<p>Go <span aria-hidden="true">↗</span></p>'), ['Go'])
+        self.assertEqual(self.md(
+            '<ul><li aria-hidden="true">art</li><li>keep</li></ul>'
+            '<table><tr><th>A</th><th hidden>B</th></tr><tr data-agent="skip"><td>x</td><td>y</td></tr>'
+            '<tr><td>1</td><td hidden>2</td></tr></table>'), ['- keep', '| A |\n| --- |\n| 1 |'])
+        self.assertIn('data-agent="skip"', render('<div data-agent="skip">\n\ndemo\n\n</div>'))
 
     def test_card_link(self):
         self.assertEqual(self.md('<a href="../aws/"><span>01</span><h3>AWS</h3><p>EC2</p></a>'),

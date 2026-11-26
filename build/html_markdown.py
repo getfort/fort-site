@@ -142,7 +142,7 @@ class Writer:
         if tag == 'pre':
             return ['```\n' + raw_text(node).strip('\n') + '\n```']
         if tag in ('ul', 'ol'):
-            items = [self.inline(c) for c in node.children if isinstance(c, Node) and c.tag == 'li']
+            items = [self.inline(c) for c in node.children if isinstance(c, Node) and c.tag == 'li' and not c.hidden()]
             marks = [f'{n}.' if tag == 'ol' else '-' for n in range(1, len(items) + 1)]
             return ['\n'.join(f'{mark} {item}' for mark, item in zip(marks, items) if item)]
         if tag == 'table':
@@ -169,7 +169,7 @@ class Writer:
         rows = []
         for row in self.rows(node):
             cells = [self.inline(c).replace('|', '\\|') for c in row.children
-                     if isinstance(c, Node) and c.tag in ('th', 'td')]
+                     if isinstance(c, Node) and c.tag in ('th', 'td') and not c.hidden()]
             rows.append('| ' + ' | '.join(cells) + ' |')
             if len(rows) == 1:
                 rows.append('|' + ' --- |' * len(cells))
@@ -177,7 +177,7 @@ class Writer:
 
     def rows(self, node):
         for child in node.children:
-            if isinstance(child, Node):
+            if isinstance(child, Node) and not child.hidden():
                 if child.tag == 'tr':
                     yield child
                 else:
